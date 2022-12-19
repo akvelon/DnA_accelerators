@@ -1,0 +1,85 @@
+{
+  "name": "Salesforce to Txt",
+  "description": "Streaming pipeline. Ingests objects from Salesforce to a .txt file",
+  "parameters": [
+    {
+      "name": "username",
+      "label": "Salesforce username",
+      "helpText": "",
+      "regexes": [],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "password",
+      "label": "Salesforce user password",
+      "helpText": "",
+      "regexes": [],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "securityToken",
+      "label": "Salesforce security token",
+      "helpText": "",
+      "regexes": [],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "consumerKey",
+      "label": "Salesforce connected app's consumer key",
+      "helpText": "",
+      "regexes": [],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "consumerSecret",
+      "label": "Salesforce connected app's consumer secret",
+      "helpText": "",
+      "regexes": [],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "loginUrl",
+      "label": "Salesforce endpoint to authenticate to",
+      "helpText": "URL to Salesforce login via OAUTH in format 'https://MyDomainName.my.salesforce.com/services/oauth2/token'",
+      "regexes": [],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "sObjectName",
+      "label": "Salesforce object to pull supported by CDAP Salesforce Streaming Source",
+      "helpText": "",
+      "regexes": [],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "outputTxtFilePathPrefix",
+      "label": "",
+      "helpText": "",
+      "regexes": [],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "pushTopicName",
+      "label": "Name of the push topic that was created from query for some sObject",
+      "helpText": "This push topic should have enabled 'pushTopicNotifyCreate' property. If push topic with such name doesn't exist, then new push topic for provided 'sObjectName' will be created automatically.",
+      "regexes": [],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "pullFrequencySec",
+      "label": "Delay in seconds between polling for new records updates",
+      "helpText": "",
+      "regexes": [],
+      "paramType": "TEXT",
+      "isOptional": true
+    },
+    {
+      "name": "startOffset",
+      "label": "Inclusive start offset from which the reading should be started",
+      "helpText": "",
+      "regexes": [],
+      "paramType": "TEXT",
+      "isOptional": true
+    }
+  ]
+}

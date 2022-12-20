@@ -18,9 +18,11 @@
 package com.akvelon.salesforce.templates;
 
 import java.util.Map;
+
 import com.akvelon.salesforce.options.CdapSalesforceStreamingSourceOptions;
 import com.akvelon.salesforce.transforms.FormatInputTransform;
 import com.akvelon.salesforce.utils.PluginConfigOptionsConverter;
+import io.cdap.plugin.salesforce.SalesforceConstants;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.PipelineResult;
 import org.apache.beam.sdk.coders.KvCoder;
@@ -38,6 +40,8 @@ import org.apache.beam.sdk.values.KV;
 import org.apache.hadoop.io.NullWritable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.akvelon.salesforce.utils.VaultUtils.getSalesforceCredentialsFromVault;
 
 /**
  * The {@link CdapSalesforceStreamingToTxt} pipeline is a streaming pipeline which ingests data in
@@ -80,6 +84,8 @@ import org.slf4j.LoggerFactory;
  * --referenceName=your-reference-name \
  * --outputTxtFilePathPrefix=your-path-to-output-folder-with-filename-prefix \
  * --pullFrequencySec=1 \
+ * --secretStoreUrl=your-url \
+ * --vaultToken=your-token \
  * --startOffset=0
  * }
  *
@@ -117,6 +123,19 @@ public class CdapSalesforceStreamingToTxt {
      */
     public static PipelineResult run(
             Pipeline pipeline, CdapSalesforceStreamingSourceOptions options) {
+        if (options.getSecretStoreUrl() != null && options.getVaultToken() != null) {
+            Map<String, String> credentials =
+                    getSalesforceCredentialsFromVault(options.getSecretStoreUrl(), options.getVaultToken());
+            options.setConsumerKey(credentials.get(SalesforceConstants.PROPERTY_CONSUMER_KEY));
+            options.setConsumerSecret(credentials.get(SalesforceConstants.PROPERTY_CONSUMER_SECRET));
+            options.setSecurityToken(credentials.get(SalesforceConstants.PROPERTY_SECURITY_TOKEN));
+            options.setUsername(credentials.get(SalesforceConstants.PROPERTY_USERNAME));
+            options.setPassword(credentials.get(SalesforceConstants.PROPERTY_PASSWORD));
+        } else {
+            LOG.warn(
+                    "No information to retrieve Salesforce credentials from store was provided. "
+                            + "Trying to retrieve them from pipeline options.");
+        }
         Map<String, Object> paramsMap =
                 PluginConfigOptionsConverter.salesforceStreamingSourceOptionsToParamsMap(options);
         LOG.info("Starting Cdap-Salesforce-streaming-to-txt pipeline with parameters: {}", paramsMap);

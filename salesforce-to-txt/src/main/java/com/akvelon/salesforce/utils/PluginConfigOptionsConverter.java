@@ -41,6 +41,7 @@ public class PluginConfigOptionsConverter {
     /** Returns map of parameters for Cdap Salesforce streaming source plugin. */
     public static Map<String, Object> salesforceStreamingSourceOptionsToParamsMap(
             CdapSalesforceStreamingSourceOptions options) {
+        //TODO: validate secured parameters
         return ImmutableMap.<String, Object>builder()
                 .put(Constants.Reference.REFERENCE_NAME, options.getReferenceName())
                 .put(SALESFORCE_STREAMING_PUSH_TOPIC_NAME, options.getPushTopicName())

@@ -31,31 +31,26 @@ public interface CdapSalesforceStreamingSourceOptions extends BaseCdapOptions {
 
     //Salesforce
 
-    @Validation.Required
     @Description(SalesforceConstants.PROPERTY_USERNAME)
     String getUsername();
 
     void setUsername(String username);
 
-    @Validation.Required
     @Description(SalesforceConstants.PROPERTY_PASSWORD)
     String getPassword();
 
     void setPassword(String password);
 
-    @Validation.Required
     @Description(SalesforceConstants.PROPERTY_SECURITY_TOKEN)
     String getSecurityToken();
 
     void setSecurityToken(String securityToken);
 
-    @Validation.Required
     @Description(SalesforceConstants.PROPERTY_CONSUMER_KEY)
     String getConsumerKey();
 
     void setConsumerKey(String consumerKey);
 
-    @Validation.Required
     @Description(SalesforceConstants.PROPERTY_CONSUMER_SECRET)
     String getConsumerSecret();
 
@@ -100,4 +95,14 @@ public interface CdapSalesforceStreamingSourceOptions extends BaseCdapOptions {
     Long getStartOffset();
 
     void setStartOffset(Long startOffset);
+
+    @Description("URL to credentials in Vault")
+    String getSecretStoreUrl();
+
+    void setSecretStoreUrl(String secretStoreUrl);
+
+    @Description("Vault token")
+    String getVaultToken();
+
+    void setVaultToken(String vaultToken);
 }

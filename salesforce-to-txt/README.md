@@ -107,17 +107,24 @@ To deploy the pipeline, you should refer to the template file and pass the
 required by the pipeline.
 
 The template requires the following parameters:
-- `bootstrapServers`: Comma separated kafka bootstrap servers in format ip:port
-- inputTopics: Comma separated list of Kafka topics to read from
-- outputTopic: Pub/Sub topic to write the output, in the format of 'projects/yourproject/topics/yourtopic'
+- `loginUrl` - Salesforce endpoint to authenticate to. Example: *'https://MyDomainName.my.salesforce.com/services/oauth2/token'*.
+- `sObjectName` - Salesforce object to pull supported by CDAP Salesforce Streaming Source.
+- `pushTopicName` - name of the push topic that was created from query for some sObject. This push topic should have enabled *pushTopicNotifyCreate* property.
+  If push topic with such name doesn't exist, then new push topic for provided **'sObjectName'** will be created automatically.
 
 The template allows for the user to supply the following optional parameters:
-- javascriptTextTransformGcsPath: Path to javascript function in GCS
-- javascriptTextTransformFunctionName: Name of javascript function
-- outputDeadLetterTopic: Topic for messages failed to reach the output topic(aka. DeadLetter topic)
-- secretStoreUrl: URL to Kafka credentials in HashiCorp Vault secret storage in the format
+- `pullFrequencySec` - delay in seconds between polling for new records updates.
+- `startOffset` - inclusive start offset from which the reading should be started.
+- `secretStoreUrl`: URL to Salesforce credentials in HashiCorp Vault secret storage in the format
   'http(s)://vaultip:vaultport/path/to/credentials'
-- vaultToken: Token to access HashiCorp Vault secret storage
+- `vaultToken`: Token to access HashiCorp Vault secret storage
+
+You can provide the next secured parameters directly instead of providing HashiCorp Vault parameters:
+- `username` - Salesforce username.
+- `password` - Salesforce user password.
+- `securityToken` - Salesforce security token.
+- `consumerKey` - Salesforce connected app's consumer key.
+- `consumerSecret` - Salesforce connected app's consumer secret.
 
 You can do this in 3 different ways:
 1. Using [Dataflow Google Cloud Console](https://console.cloud.google.com/dataflow/jobs)
@@ -134,6 +141,8 @@ You can do this in 3 different ways:
         --parameters loginUrl="https://MyDomainName.my.salesforce.com/services/oauth2/token" \
         --parameters sObjectName="Accounts" \
         --parameters pushTopicName="your-topic" \
+        --parameters secretStoreUrl="http(s)://host:port/path/to/credentials" \
+        --parameters vaultToken="your-token" \
         --region "${REGION}"
     ```
 3. With a REST API request
@@ -150,14 +159,16 @@ You can do this in 3 different ways:
                  "jobName": "'$JOB_NAME'",
                  "containerSpecGcsPath": "'$TEMPLATE_PATH'",
                  "parameters": {
-                      "username"="your-username",
-                      "password"="your-password",
-                      "securityToken"="your-token",
-                      "consumerKey"="your-key",
-                      "consumerSecret"="your-secret",
-                      "loginUrl"="https://MyDomainName.my.salesforce.com/services/oauth2/token",
-                      "sObjectName"="Accounts",
-                      "pushTopicName": "your-topic"
+                     "username"="your-username",
+                     "password"="your-password",
+                     "securityToken"="your-token",
+                     "consumerKey"="your-key",
+                     "consumerSecret"="your-secret",
+                     "loginUrl"="https://MyDomainName.my.salesforce.com/services/oauth2/token",
+                     "sObjectName"="Accounts",
+                     "pushTopicName": "your-topic",
+                     "secretStoreUrl": "http(s)://host:port/path/to/credentials",
+                     "vaultToken": "your-token"
                  }
              }
          }

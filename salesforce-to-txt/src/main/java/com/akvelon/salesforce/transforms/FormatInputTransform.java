@@ -17,13 +17,9 @@
  */
 package com.akvelon.salesforce.transforms;
 
-import io.cdap.cdap.api.data.schema.Schema;
-import io.cdap.plugin.salesforce.plugin.source.batch.SalesforceBatchSource;
-import io.cdap.plugin.salesforce.plugin.source.batch.SalesforceSourceConfig;
 import io.cdap.plugin.salesforce.plugin.source.streaming.SalesforceReceiver;
 import io.cdap.plugin.salesforce.plugin.source.streaming.SalesforceStreamingSource;
 import io.cdap.plugin.salesforce.plugin.source.streaming.SalesforceStreamingSourceConfig;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import com.akvelon.salesforce.utils.GetOffsetUtils;
 import org.apache.beam.sdk.io.cdap.CdapIO;
@@ -33,26 +29,6 @@ import org.apache.hadoop.io.NullWritable;
 
 /** Different input transformations over the processed data in the pipeline. */
 public class FormatInputTransform {
-
-    /**
-     * Configures Cdap Salesforce Read transform.
-     *
-     * @param pluginConfigParams Cdap Salesforce plugin config parameters
-     * @return configured Read transform
-     */
-    @SuppressWarnings("rawtypes")
-    public static CdapIO.Read<Schema, LinkedHashMap> readFromCdapSalesforce(
-            Map<String, Object> pluginConfigParams) {
-
-        final SalesforceSourceConfig pluginConfig =
-                new ConfigWrapper<>(SalesforceSourceConfig.class).withParams(pluginConfigParams).build();
-
-        return CdapIO.<Schema, LinkedHashMap>read()
-                .withCdapPluginClass(SalesforceBatchSource.class)
-                .withPluginConfig(pluginConfig)
-                .withKeyClass(Schema.class)
-                .withValueClass(LinkedHashMap.class);
-    }
 
     /**
      * Configures Cdap Salesforce Streaming Read transform.
@@ -69,6 +45,9 @@ public class FormatInputTransform {
                 new ConfigWrapper<>(SalesforceStreamingSourceConfig.class)
                         .withParams(pluginConfigParams)
                         .build();
+        if (pluginConfig == null) {
+            throw new IllegalStateException("Plugin config is null");
+        }
 
         pluginConfig.ensurePushTopicExistAndWithCorrectFields();
 

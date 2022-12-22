@@ -23,6 +23,11 @@
     <packaging>pom</packaging>
     <name>data-and-analytics</name>
 
+    <modules>
+        <module>common</module>
+        <module>salesforce-to-txt</module>
+    </modules>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <autovalue.version>1.7.4</autovalue.version>
@@ -79,6 +84,11 @@
         <dependency>
             <groupId>org.apache.beam</groupId>
             <artifactId>beam-sdks-java-io-cdap</artifactId>
+            <version>2.45.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.beam</groupId>
+            <artifactId>beam-sdks-java-io-hadoop-format</artifactId>
             <version>2.42.0</version>
         </dependency>
         <dependency>

@@ -5,35 +5,35 @@
     {
       "name": "username",
       "label": "Salesforce username",
-      "helpText": "",
+      "helpText": "Example: myemail@akvelon.com",
       "regexes": [],
       "paramType": "TEXT"
     },
     {
       "name": "password",
       "label": "Salesforce user password",
-      "helpText": "",
+      "helpText": "Password without any additional characters or spaces",
       "regexes": [],
       "paramType": "TEXT"
     },
     {
       "name": "securityToken",
       "label": "Salesforce security token",
-      "helpText": "",
+      "helpText": "You can find this token in Salesforce personal settings",
       "regexes": [],
       "paramType": "TEXT"
     },
     {
       "name": "consumerKey",
       "label": "Salesforce connected app's consumer key",
-      "helpText": "",
+      "helpText": "You can find this key in Salesforce personal settings",
       "regexes": [],
       "paramType": "TEXT"
     },
     {
       "name": "consumerSecret",
       "label": "Salesforce connected app's consumer secret",
-      "helpText": "",
+      "helpText": "You can find this secret in Salesforce personal settings",
       "regexes": [],
       "paramType": "TEXT"
     },
@@ -47,14 +47,14 @@
     {
       "name": "sObjectName",
       "label": "Salesforce object to pull supported by CDAP Salesforce Streaming Source",
-      "helpText": "",
+      "helpText": "Example: Accounts",
       "regexes": [],
       "paramType": "TEXT"
     },
     {
       "name": "outputTxtFilePathPrefix",
-      "label": "",
-      "helpText": "",
+      "label": "Path to output folder with filename prefix.",
+      "helpText": "It will write a set of .txt files with names like {prefix}-###.",
       "regexes": [],
       "paramType": "TEXT"
     },
@@ -68,7 +68,7 @@
     {
       "name": "pullFrequencySec",
       "label": "Delay in seconds between polling for new records updates",
-      "helpText": "",
+      "helpText": "Example: 10",
       "regexes": [],
       "paramType": "TEXT",
       "isOptional": true
@@ -76,7 +76,7 @@
     {
       "name": "startOffset",
       "label": "Inclusive start offset from which the reading should be started",
-      "helpText": "",
+      "helpText": "Example: 10",
       "regexes": [],
       "paramType": "TEXT",
       "isOptional": true

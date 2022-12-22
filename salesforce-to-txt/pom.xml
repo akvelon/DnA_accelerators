@@ -36,5 +36,10 @@
             <artifactId>cdap-salesforce-plugins</artifactId>
             <version>1.5.0</version>
         </dependency>
+        <dependency>
+            <groupId>io.cdap.cdap</groupId>
+            <artifactId>cdap-api</artifactId>
+            <version>${cdap.version}</version>
+        </dependency>
     </dependencies>
 </project>

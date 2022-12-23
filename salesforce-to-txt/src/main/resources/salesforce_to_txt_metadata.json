@@ -3,39 +3,51 @@
   "description": "Streaming pipeline. Ingests objects from Salesforce to a .txt file",
   "parameters": [
     {
+      "name": "referenceName",
+      "label": "Cdap reference name",
+      "helpText": "Any string",
+      "regexes": [],
+      "paramType": "TEXT"
+    },
+    {
       "name": "username",
       "label": "Salesforce username",
       "helpText": "Example: myemail@akvelon.com",
       "regexes": [],
-      "paramType": "TEXT"
+      "paramType": "TEXT",
+      "isOptional": true
     },
     {
       "name": "password",
       "label": "Salesforce user password",
       "helpText": "Password without any additional characters or spaces",
       "regexes": [],
-      "paramType": "TEXT"
+      "paramType": "TEXT",
+      "isOptional": true
     },
     {
       "name": "securityToken",
       "label": "Salesforce security token",
       "helpText": "You can find this token in Salesforce personal settings",
       "regexes": [],
-      "paramType": "TEXT"
+      "paramType": "TEXT",
+      "isOptional": true
     },
     {
       "name": "consumerKey",
       "label": "Salesforce connected app's consumer key",
       "helpText": "You can find this key in Salesforce personal settings",
       "regexes": [],
-      "paramType": "TEXT"
+      "paramType": "TEXT",
+      "isOptional": true
     },
     {
       "name": "consumerSecret",
       "label": "Salesforce connected app's consumer secret",
       "helpText": "You can find this secret in Salesforce personal settings",
       "regexes": [],
-      "paramType": "TEXT"
+      "paramType": "TEXT",
+      "isOptional": true
     },
     {
       "name": "loginUrl",
@@ -45,9 +57,9 @@
       "paramType": "TEXT"
     },
     {
-      "name": "sObjectName",
+      "name": "SObjectName",
       "label": "Salesforce object to pull supported by CDAP Salesforce Streaming Source",
-      "helpText": "Example: Accounts",
+      "helpText": "Example: Account",
       "regexes": [],
       "paramType": "TEXT"
     },

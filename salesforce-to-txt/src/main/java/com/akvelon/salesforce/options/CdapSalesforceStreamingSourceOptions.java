@@ -17,9 +17,10 @@
  */
 package com.akvelon.salesforce.options;
 
+import io.cdap.plugin.common.Constants;
 import io.cdap.plugin.salesforce.SalesforceConstants;
-import com.akvelon.options.BaseCdapOptions;
 import io.cdap.plugin.salesforce.plugin.source.batch.util.SalesforceSourceConstants;
+import org.apache.beam.runners.dataflow.options.DataflowPipelineOptions;
 import org.apache.beam.sdk.options.Description;
 import org.apache.beam.sdk.options.Validation;
 
@@ -27,7 +28,15 @@ import org.apache.beam.sdk.options.Validation;
  * The {@link CdapSalesforceStreamingSourceOptions} interface provides the custom execution options passed by the
  * executor at the command-line for example with Cdap Salesfroce plugins.
  */
-public interface CdapSalesforceStreamingSourceOptions extends BaseCdapOptions {
+public interface CdapSalesforceStreamingSourceOptions extends DataflowPipelineOptions {
+
+    // Base
+
+    @Validation.Required
+    @Description(Constants.Reference.REFERENCE_NAME_DESCRIPTION)
+    String getReferenceName();
+
+    void setReferenceName(String referenceName);
 
     //Salesforce
 

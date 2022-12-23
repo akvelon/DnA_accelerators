@@ -97,7 +97,7 @@ gcloud dataflow flex-template build ${TEMPLATE_PATH} \
        --flex-template-base-image ${BASE_CONTAINER_IMAGE} \
        --metadata-file "src/main/resources/salesforce_to_txt_metadata.json" \
        --jar "target/salesforce-to-txt-1.0-SNAPSHOT.jar" \
-       --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="com.akvelon.salesforce.CdapSalesforceStreamingToTxt"
+       --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="com.akvelon.salesforce.templates.CdapSalesforceStreamingToTxt"
 ```
 
 ### Executing Template
@@ -107,10 +107,12 @@ To deploy the pipeline, you should refer to the template file and pass the
 required by the pipeline.
 
 The template requires the following parameters:
+- `referenceName` - This will be used to uniquely identify this source.
 - `loginUrl` - Salesforce endpoint to authenticate to. Example: *'https://MyDomainName.my.salesforce.com/services/oauth2/token'*.
-- `sObjectName` - Salesforce object to pull supported by CDAP Salesforce Streaming Source.
+- `SObjectName` - Salesforce object to pull supported by CDAP Salesforce Streaming Source.
 - `pushTopicName` - name of the push topic that was created from query for some sObject. This push topic should have enabled *pushTopicNotifyCreate* property.
   If push topic with such name doesn't exist, then new push topic for provided **'sObjectName'** will be created automatically.
+- `outputTxtFilePathPrefix` - 
 
 The template allows for the user to supply the following optional parameters:
 - `pullFrequencySec` - delay in seconds between polling for new records updates.
@@ -139,10 +141,12 @@ You can do this in 3 different ways:
         --parameters consumerKey="your-key" \
         --parameters consumerSecret="your-secret" \
         --parameters loginUrl="https://MyDomainName.my.salesforce.com/services/oauth2/token" \
-        --parameters sObjectName="Accounts" \
+        --parameters SObjectName="Accounts" \
         --parameters pushTopicName="your-topic" \
         --parameters secretStoreUrl="http(s)://host:port/path/to/credentials" \
         --parameters vaultToken="your-token" \
+        --parameters referenceName="your-reference-name" \
+        --parameters outputTxtFilePathPrefix="your-file-path-prefix" \
         --region "${REGION}"
     ```
 3. With a REST API request
@@ -165,10 +169,12 @@ You can do this in 3 different ways:
                      "consumerKey"="your-key",
                      "consumerSecret"="your-secret",
                      "loginUrl"="https://MyDomainName.my.salesforce.com/services/oauth2/token",
-                     "sObjectName"="Accounts",
+                     "SObjectName"="Accounts",
                      "pushTopicName": "your-topic",
                      "secretStoreUrl": "http(s)://host:port/path/to/credentials",
-                     "vaultToken": "your-token"
+                     "vaultToken": "your-token",
+                     "referenceName": "your-reference-name",
+                     "outputTxtFilePathPrefix": "your-file-path-prefix"
                  }
              }
          }

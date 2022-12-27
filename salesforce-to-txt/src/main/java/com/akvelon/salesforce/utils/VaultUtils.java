@@ -1,8 +1,8 @@
 package com.akvelon.salesforce.utils;
 
 import io.cdap.plugin.salesforce.SalesforceConstants;
-import org.apache.beam.vendor.grpc.v1p36p0.com.google.gson.JsonObject;
-import org.apache.beam.vendor.grpc.v1p36p0.com.google.gson.JsonParser;
+import org.apache.beam.vendor.grpc.v1p48p1.com.google.gson.JsonObject;
+import org.apache.beam.vendor.grpc.v1p48p1.com.google.gson.JsonParser;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;

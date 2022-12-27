@@ -27,6 +27,8 @@ import org.apache.beam.sdk.io.cdap.ConfigWrapper;
 import org.apache.beam.sdk.io.cdap.Plugin;
 import org.apache.hadoop.io.NullWritable;
 
+import static org.apache.beam.sdk.util.Preconditions.checkStateNotNull;
+
 /** Different input transformations over the processed data in the pipeline. */
 public class FormatInputTransform {
 
@@ -45,9 +47,7 @@ public class FormatInputTransform {
                 new ConfigWrapper<>(SalesforceStreamingSourceConfig.class)
                         .withParams(pluginConfigParams)
                         .build();
-        if (pluginConfig == null) {
-            throw new IllegalStateException("Plugin config is null");
-        }
+        checkStateNotNull(pluginConfig, "Plugin config can't be null.");
 
         pluginConfig.ensurePushTopicExistAndWithCorrectFields();
 

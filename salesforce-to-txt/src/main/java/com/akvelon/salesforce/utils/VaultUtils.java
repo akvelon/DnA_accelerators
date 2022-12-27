@@ -1,6 +1,9 @@
 package com.akvelon.salesforce.utils;
 
 import io.cdap.plugin.salesforce.SalesforceConstants;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.beam.vendor.grpc.v1p48p1.com.google.gson.JsonObject;
 import org.apache.beam.vendor.grpc.v1p48p1.com.google.gson.JsonParser;
 import org.apache.http.HttpResponse;
@@ -11,10 +14,9 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
+/**
+ * Class for working with HashiCorp Vault.
+ */
 public class VaultUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(VaultUtils.class);

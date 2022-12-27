@@ -17,12 +17,13 @@
  */
 package com.akvelon.salesforce.templates;
 
-import java.util.Map;
+import static com.akvelon.salesforce.utils.VaultUtils.getSalesforceCredentialsFromVault;
 
 import com.akvelon.salesforce.options.CdapSalesforceStreamingSourceOptions;
 import com.akvelon.salesforce.transforms.FormatInputTransform;
 import com.akvelon.salesforce.utils.PluginConfigOptionsConverter;
 import io.cdap.plugin.salesforce.SalesforceConstants;
+import java.util.Map;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.PipelineResult;
 import org.apache.beam.sdk.coders.KvCoder;
@@ -40,8 +41,6 @@ import org.apache.beam.sdk.values.KV;
 import org.apache.hadoop.io.NullWritable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.akvelon.salesforce.utils.VaultUtils.getSalesforceCredentialsFromVault;
 
 /**
  * The {@link CdapSalesforceStreamingToTxt} pipeline is a streaming pipeline which ingests data in

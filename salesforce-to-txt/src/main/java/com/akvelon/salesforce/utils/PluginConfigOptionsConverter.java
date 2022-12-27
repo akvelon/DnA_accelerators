@@ -17,11 +17,11 @@
  */
 package com.akvelon.salesforce.utils;
 
+import com.akvelon.salesforce.options.CdapSalesforceStreamingSourceOptions;
 import io.cdap.plugin.common.Constants;
 import io.cdap.plugin.salesforce.SalesforceConstants;
 import io.cdap.plugin.salesforce.plugin.source.batch.util.SalesforceSourceConstants;
 import java.util.Map;
-import com.akvelon.salesforce.options.CdapSalesforceStreamingSourceOptions;
 import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.collect.ImmutableMap;
 
 /**

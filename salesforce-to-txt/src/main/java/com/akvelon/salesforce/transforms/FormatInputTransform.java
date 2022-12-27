@@ -17,17 +17,17 @@
  */
 package com.akvelon.salesforce.transforms;
 
+import static org.apache.beam.sdk.util.Preconditions.checkStateNotNull;
+
+import com.akvelon.salesforce.utils.GetOffsetUtils;
 import io.cdap.plugin.salesforce.plugin.source.streaming.SalesforceReceiver;
 import io.cdap.plugin.salesforce.plugin.source.streaming.SalesforceStreamingSource;
 import io.cdap.plugin.salesforce.plugin.source.streaming.SalesforceStreamingSourceConfig;
 import java.util.Map;
-import com.akvelon.salesforce.utils.GetOffsetUtils;
 import org.apache.beam.sdk.io.cdap.CdapIO;
 import org.apache.beam.sdk.io.cdap.ConfigWrapper;
 import org.apache.beam.sdk.io.cdap.Plugin;
 import org.apache.hadoop.io.NullWritable;
-
-import static org.apache.beam.sdk.util.Preconditions.checkStateNotNull;
 
 /** Different input transformations over the processed data in the pipeline. */
 public class FormatInputTransform {

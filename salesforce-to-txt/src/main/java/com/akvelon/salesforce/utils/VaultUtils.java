@@ -37,6 +37,7 @@ public class VaultUtils {
             HttpClient client = HttpClientBuilder.create().build();
             HttpGet request = new HttpGet(secretStoreUrl);
             request.addHeader("X-Vault-Token", token);
+            request.addHeader("X-Vault-Namespace", "admin");
             HttpResponse response = client.execute(request);
             String json = EntityUtils.toString(response.getEntity(), "UTF-8");
 

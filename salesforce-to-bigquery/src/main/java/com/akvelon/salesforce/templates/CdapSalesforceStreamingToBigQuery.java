@@ -22,15 +22,27 @@ import static com.akvelon.salesforce.utils.VaultUtils.getSalesforceCredentialsFr
 import com.akvelon.salesforce.options.CdapSalesforceStreamingSourceOptions;
 import com.akvelon.salesforce.transforms.FormatInputTransform;
 import com.akvelon.salesforce.utils.PluginConfigOptionsConverter;
+import com.google.api.services.bigquery.model.TableRow;
 import io.cdap.plugin.salesforce.SalesforceConstants;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.PipelineResult;
+import org.apache.beam.sdk.coders.Coder;
 import org.apache.beam.sdk.coders.KvCoder;
 import org.apache.beam.sdk.coders.NullableCoder;
 import org.apache.beam.sdk.coders.StringUtf8Coder;
+import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO;
+import org.apache.beam.sdk.io.gcp.bigquery.InsertRetryPolicy;
+import org.apache.beam.sdk.io.gcp.bigquery.TableRowJsonCoder;
 import org.apache.beam.sdk.io.hadoop.WritableCoder;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
+import org.apache.beam.sdk.transforms.DoFn;
+import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.transforms.Values;
 import org.apache.beam.sdk.transforms.windowing.AfterProcessingTime;
 import org.apache.beam.sdk.transforms.windowing.GlobalWindows;
@@ -123,10 +135,11 @@ public class CdapSalesforceStreamingToBigQuery {
          * Steps:
          *  1) Read messages in from Cdap Salesforce
          *  2) Extract values only
-         *  3) Write successful records to .txt file
+         *  3) Convert message to TableRows
+         *  4) Write successful records to BigQuery
          */
 
-        PCollection<String> result = pipeline
+        PCollection<String> jsonMessages = pipeline
                 .apply(
                         "readFromCdapSalesforceStreaming",
                         FormatInputTransform.readFromCdapSalesforceStreaming(
@@ -141,8 +154,55 @@ public class CdapSalesforceStreamingToBigQuery {
                                 .discardingFiredPanes())
                 .apply(Values.create());
 
-        //TODO: write to BigQuery
+        PCollection<TableRow> tableRows = jsonMessages.apply("ConvertMessageToTableRow", ParDo.of(
+                new DoFn<String, TableRow>() {
+                    @ProcessElement
+                    public void processElement(ProcessContext context) {
+                        String json = context.element();
+                        if (json != null) {
+                            try {
+                                TableRow row = convertJsonToTableRow(json);
+                                context.output(row);
+                            } catch (Exception e) {
+                                LOG.error("Can not convert JSON to TableRow");
+                            }
+                        }
+                    }
+                }));
+
+        tableRows
+            .apply(
+                "WriteSuccessfulRecords",
+                BigQueryIO.writeTableRows()
+                    .withoutValidation()
+                    .withCreateDisposition(BigQueryIO.Write.CreateDisposition.CREATE_NEVER)
+                    .withWriteDisposition(BigQueryIO.Write.WriteDisposition.WRITE_APPEND)
+                    .withExtendedErrorInfo()
+                    .withMethod(BigQueryIO.Write.Method.STREAMING_INSERTS)
+                    .withFailedInsertRetryPolicy(InsertRetryPolicy.retryTransientErrors())
+                    .to(options.getOutputTableSpec()));
 
         return pipeline.run();
+    }
+
+    /**
+     * Converts a JSON string to a {@link TableRow} object. If the data fails to convert, a {@link
+     * RuntimeException} will be thrown.
+     *
+     * @param json The JSON string to parse.
+     * @return The parsed {@link TableRow} object.
+     */
+    public static TableRow convertJsonToTableRow(String json) {
+        TableRow row;
+        // Parse the JSON into a {@link TableRow} object.
+        try (InputStream inputStream =
+                     new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))) {
+            row = TableRowJsonCoder.of().decode(inputStream, Coder.Context.OUTER);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to serialize json to table row: " + json, e);
+        }
+
+        return row;
     }
 }

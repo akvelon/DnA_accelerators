@@ -25,6 +25,7 @@
 
     <modules>
         <module>salesforce-to-txt</module>
+        <module>salesforce-to-bigquery</module>
     </modules>
 
     <properties>
@@ -127,6 +128,10 @@
                 <exclusion>  <!-- declare the exclusion here -->
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-jdk14</artifactId>
+                </exclusion>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

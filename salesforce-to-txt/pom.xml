@@ -59,7 +59,7 @@
         <dependency>
             <groupId>com.akvelon</groupId>
             <artifactId>cdap-salesforce-plugins</artifactId>
-            <version>1.5.0</version>
+            <version>1.5.1</version>
             <exclusions>
                 <exclusion>  <!-- declare the exclusion here -->
                     <groupId>org.slf4j</groupId>

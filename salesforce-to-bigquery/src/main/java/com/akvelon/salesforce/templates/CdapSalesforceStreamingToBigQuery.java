@@ -24,7 +24,6 @@ import com.akvelon.salesforce.transforms.FormatInputTransform;
 import com.akvelon.salesforce.utils.PluginConfigOptionsConverter;
 import com.google.api.services.bigquery.model.TableRow;
 import io.cdap.plugin.salesforce.SalesforceConstants;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -84,7 +83,6 @@ import org.slf4j.LoggerFactory;
  * {@code
  * --runner=YOUR_SELECTED_RUNNER
  * }
- * </pre>
  */
 public class CdapSalesforceStreamingToBigQuery {
 

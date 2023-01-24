@@ -71,6 +71,13 @@
       "paramType": "TEXT"
     },
     {
+      "name": "outputDeadletterTable",
+      "label": "BigQuery dead letter table spec",
+      "helpText": "Big Query dead letter table spec to write the failed records to.",
+      "regexes": [],
+      "paramType": "TEXT"
+    },
+    {
       "name": "pushTopicName",
       "label": "Name of the push topic that was created from query for some sObject",
       "helpText": "This push topic should have enabled 'pushTopicNotifyCreate' property. If push topic with such name doesn't exist, then new push topic for provided 'sObjectName' will be created automatically.",

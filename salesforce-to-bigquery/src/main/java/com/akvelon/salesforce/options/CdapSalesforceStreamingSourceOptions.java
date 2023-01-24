@@ -87,6 +87,13 @@ public interface CdapSalesforceStreamingSourceOptions extends DataflowPipelineOp
 
     void setOutputTableSpec(String outputTableSpec);
 
+    @Description(
+            "The dead-letter table to output to within BigQuery in <project-id>:<dataset>.<table> "
+                    + "format. If it doesn't exist, it will be created during pipeline execution.")
+    String getOutputDeadletterTable();
+
+    void setOutputDeadletterTable(String outputDeadletterTable);
+
     //Streaming
 
     @Validation.Required

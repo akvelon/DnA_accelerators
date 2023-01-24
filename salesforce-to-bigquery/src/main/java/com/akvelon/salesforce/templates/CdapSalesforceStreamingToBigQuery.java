@@ -35,10 +35,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.PipelineResult;
-import org.apache.beam.sdk.coders.Coder;
-import org.apache.beam.sdk.coders.KvCoder;
-import org.apache.beam.sdk.coders.NullableCoder;
-import org.apache.beam.sdk.coders.StringUtf8Coder;
+import org.apache.beam.sdk.coders.*;
 import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO;
 import org.apache.beam.sdk.io.gcp.bigquery.BigQueryInsertError;
 import org.apache.beam.sdk.io.gcp.bigquery.InsertRetryPolicy;
@@ -190,6 +187,15 @@ public class CdapSalesforceStreamingToBigQuery {
 
         // Create the pipeline
         Pipeline pipeline = Pipeline.create(options);
+
+        // Register the coder for pipeline
+        FailsafeElementCoder<String, String> coder =
+                FailsafeElementCoder.of(NullableCoder.of(StringUtf8Coder.of()),
+                        NullableCoder.of(StringUtf8Coder.of()));
+
+        CoderRegistry coderRegistry = pipeline.getCoderRegistry();
+        coderRegistry.registerCoderForType(coder.getEncodedTypeDescriptor(), coder);
+
         run(pipeline, options);
     }
 
@@ -397,6 +403,9 @@ public class CdapSalesforceStreamingToBigQuery {
 
                                     try {
                                         TableRow row = convertJsonToTableRow(json);
+                                        if (row != null) {
+                                            throw new Exception("Expected exception for test");
+                                        }
                                         context.output(row);
                                     } catch (Exception e) {
                                         context.output(

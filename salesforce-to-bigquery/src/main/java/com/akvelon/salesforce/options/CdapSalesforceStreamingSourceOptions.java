@@ -26,7 +26,7 @@ import org.apache.beam.sdk.options.Validation;
 
 /**
  * The {@link CdapSalesforceStreamingSourceOptions} interface provides the custom execution options passed by the
- * executor at the command-line for example with Cdap Salesfroce plugins.
+ * executor at the command-line for example with Cdap Salesforce plugins.
  */
 public interface CdapSalesforceStreamingSourceOptions extends DataflowPipelineOptions {
 

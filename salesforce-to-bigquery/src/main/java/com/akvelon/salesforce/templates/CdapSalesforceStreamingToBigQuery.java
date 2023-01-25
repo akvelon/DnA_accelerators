@@ -34,8 +34,11 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.apache.beam.sdk.Pipeline;
-import org.apache.beam.sdk.PipelineResult;
-import org.apache.beam.sdk.coders.*;
+import org.apache.beam.sdk.coders.Coder;
+import org.apache.beam.sdk.coders.CoderRegistry;
+import org.apache.beam.sdk.coders.KvCoder;
+import org.apache.beam.sdk.coders.NullableCoder;
+import org.apache.beam.sdk.coders.StringUtf8Coder;
 import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO;
 import org.apache.beam.sdk.io.gcp.bigquery.BigQueryInsertError;
 import org.apache.beam.sdk.io.gcp.bigquery.InsertRetryPolicy;
@@ -49,10 +52,7 @@ import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.transforms.Values;
-import org.apache.beam.sdk.transforms.windowing.AfterProcessingTime;
-import org.apache.beam.sdk.transforms.windowing.GlobalWindows;
-import org.apache.beam.sdk.transforms.windowing.Repeatedly;
-import org.apache.beam.sdk.transforms.windowing.Window;
+import org.apache.beam.sdk.transforms.windowing.*;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PCollectionList;
@@ -62,6 +62,7 @@ import org.apache.beam.sdk.values.TupleTagList;
 import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.base.Throwables;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.io.NullWritable;
+import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -204,7 +205,7 @@ public class CdapSalesforceStreamingToBigQuery {
      *
      * @param options arguments to the pipeline
      */
-    public static PipelineResult run(
+    public static void run(
             Pipeline pipeline, CdapSalesforceStreamingSourceOptions options) {
         if (options.getSecretStoreUrl() != null && options.getVaultToken() != null) {
             Map<String, String> credentials =
@@ -312,7 +313,7 @@ public class CdapSalesforceStreamingToBigQuery {
                         .setErrorRecordsTableSchema(DEADLETTER_SCHEMA)
                         .build());
 
-        return pipeline.run();
+        pipeline.run().waitUntilFinish(Duration.standardMinutes(10));
     }
 
     /**
@@ -403,9 +404,6 @@ public class CdapSalesforceStreamingToBigQuery {
 
                                     try {
                                         TableRow row = convertJsonToTableRow(json);
-                                        if (row != null) {
-                                            throw new Exception("Expected exception for test");
-                                        }
                                         context.output(row);
                                     } catch (Exception e) {
                                         context.output(

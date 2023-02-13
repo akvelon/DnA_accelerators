@@ -1,3 +1,6 @@
-FROM apache/beam_python3.8_sdk:2.44.0
+FROM google/cloud-sdk:latest
 
-RUN pip3 install hdbscan torch torchvision torchaudio
+RUN apt-get update && apt-get install -y default-jdk
+RUN apt-get update && apt-get install -y python3.9
+
+RUN pip3 install apache-beam[gcp] hdbscan

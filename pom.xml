@@ -34,7 +34,7 @@
         <autovalue.annotations.version>1.7.4</autovalue.annotations.version>
         <autovalue.service.version>1.0-rc6</autovalue.service.version>
         <checkstyle.version>8.7</checkstyle.version>
-        <beam.version>2.42.0</beam.version>
+        <beam.version>2.45.0</beam.version>
         <beam-vendor-guava.version>0.1</beam-vendor-guava.version>
         <hamcrest.version>2.1</hamcrest.version>
         <hadoop.version>2.10.1</hadoop.version>
@@ -84,27 +84,72 @@
         <dependency>
             <groupId>org.apache.beam</groupId>
             <artifactId>beam-sdks-java-io-cdap</artifactId>
-            <version>2.45.0</version>
+            <exclusions>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>jul-to-slf4j</artifactId>
+                </exclusion>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-jdk14</artifactId>
+                </exclusion>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-reload4j</artifactId>
+                </exclusion>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+<!--                <exclusion>  &lt;!&ndash; declare the exclusion here &ndash;&gt;-->
+<!--                    <groupId>ch.qos.logback</groupId>-->
+<!--                    <artifactId>logback-classic</artifactId>-->
+<!--                </exclusion>-->
+            </exclusions>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.slf4j</groupId>-->
+<!--            <artifactId>slf4j-jdk14</artifactId>-->
+<!--            <version>1.7.30</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.apache.beam</groupId>
             <artifactId>beam-sdks-java-io-sparkreceiver-2</artifactId>
-            <version>2.45.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.beam</groupId>
-            <artifactId>beam-sdks-java-io-hadoop-format</artifactId>
-            <version>2.42.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.beam</groupId>
-            <artifactId>beam-sdks-java-extensions-google-cloud-platform-core</artifactId>
-            <version>2.42.0</version>
+            <version>2.45.13</version>
+            <exclusions>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>jcl-over-slf4j</artifactId>
+                </exclusion>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.beam</groupId>
             <artifactId>beam-runners-google-cloud-dataflow-java</artifactId>
-            <version>2.42.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.beam</groupId>
+            <artifactId>beam-sdks-java-extensions-python</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.beam</groupId>
+            <artifactId>beam-sdks-java-io-hadoop-format</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.beam</groupId>
+            <artifactId>beam-sdks-java-extensions-google-cloud-platform-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.beam</groupId>
+            <artifactId>beam-sdks-java-expansion-service</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.beam</groupId>
@@ -168,50 +213,50 @@
                     specified in the configuration or via the command line.
                         https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin
                     -->
-                <plugin>
-                    <groupId>com.google.cloud.tools</groupId>
-                    <artifactId>jib-maven-plugin</artifactId>
-                    <version>${jib.maven.version}</version>
-                    <configuration>
-                        <from>
-                            <!--
-                            The Dataflow Template base image to use. This
-                             should not need to change unless we want to use the JDK11
-                             -->
-                            <image>${base-container-image}:${base-container-image.version}</image>
-                        </from>
-                        <container>
-                            <!--
-                            The root directory to use to expand the compiled classes and dependencies in. The
-                            Jib plugin  will create the following directories under this root:
-                              - resources: All the files under src/resources will be copied to this folder as-is.
-                              - libs: All dependency jars needed to execute this pipeline will be copied into this
-                                      folder.
-                              - classes: Compiled pipeline code will be copied into this folder.
-                            The libs and classes folders under appRoot should thus be added in the classpath
-                            defined in src/resources/command-spec.json.
-                            -->
-                            <appRoot>${app-root}</appRoot>
-                            <!--
-                            INHERIT the base containers entrypoint. Do not override or the Dataflow service
-                            will be unable to launch this template.
-                            -->
-                            <entrypoint>INHERIT</entrypoint>
-                            <environment>
-                                <!--
-                                Set an environment variable called DATAFLOW_JAVA_COMMAND_SPEC that points to the
-                                java-command-spec.json file inside the container. Note that since the Jib plugin
-                                copies the containers of src/resources/* to appRoot/resources, the value of this
-                                environment variable can be set here.
-                                -->
-                                <DATAFLOW_JAVA_COMMAND_SPEC>
-                                    ${command-spec}
-                                </DATAFLOW_JAVA_COMMAND_SPEC>
-                            </environment>
-                        </container>
-                    </configuration>
+<!--                <plugin>-->
+<!--                    <groupId>com.google.cloud.tools</groupId>-->
+<!--                    <artifactId>jib-maven-plugin</artifactId>-->
+<!--                    <version>${jib.maven.version}</version>-->
+<!--                    <configuration>-->
+<!--                        <from>-->
+<!--                            &lt;!&ndash;-->
+<!--                            The Dataflow Template base image to use. This-->
+<!--                             should not need to change unless we want to use the JDK11-->
+<!--                             &ndash;&gt;-->
+<!--                            <image>${base-container-image}:${base-container-image.version}</image>-->
+<!--                        </from>-->
+<!--                        <container>-->
+<!--                            &lt;!&ndash;-->
+<!--                            The root directory to use to expand the compiled classes and dependencies in. The-->
+<!--                            Jib plugin  will create the following directories under this root:-->
+<!--                              - resources: All the files under src/resources will be copied to this folder as-is.-->
+<!--                              - libs: All dependency jars needed to execute this pipeline will be copied into this-->
+<!--                                      folder.-->
+<!--                              - classes: Compiled pipeline code will be copied into this folder.-->
+<!--                            The libs and classes folders under appRoot should thus be added in the classpath-->
+<!--                            defined in src/resources/command-spec.json.-->
+<!--                            &ndash;&gt;-->
+<!--                            <appRoot>${app-root}</appRoot>-->
+<!--                            &lt;!&ndash;-->
+<!--                            INHERIT the base containers entrypoint. Do not override or the Dataflow service-->
+<!--                            will be unable to launch this template.-->
+<!--                            &ndash;&gt;-->
+<!--                            <entrypoint>INHERIT</entrypoint>-->
+<!--                            <environment>-->
+<!--                                &lt;!&ndash;-->
+<!--                                Set an environment variable called DATAFLOW_JAVA_COMMAND_SPEC that points to the-->
+<!--                                java-command-spec.json file inside the container. Note that since the Jib plugin-->
+<!--                                copies the containers of src/resources/* to appRoot/resources, the value of this-->
+<!--                                environment variable can be set here.-->
+<!--                                &ndash;&gt;-->
+<!--                                <DATAFLOW_JAVA_COMMAND_SPEC>-->
+<!--                                    ${command-spec}-->
+<!--                                </DATAFLOW_JAVA_COMMAND_SPEC>-->
+<!--                            </environment>-->
+<!--                        </container>-->
+<!--                    </configuration>-->
 
-                </plugin>
+<!--                </plugin>-->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>

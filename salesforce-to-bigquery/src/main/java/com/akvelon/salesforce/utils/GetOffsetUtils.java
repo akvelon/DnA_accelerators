@@ -21,6 +21,7 @@ import static org.apache.beam.sdk.util.Preconditions.checkArgumentNotNull;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+import io.cdap.plugin.hubspot.source.streaming.HubspotStreamingSource;
 import io.cdap.plugin.salesforce.plugin.source.streaming.SalesforceStreamingSource;
 import java.util.HashMap;
 import org.apache.beam.sdk.io.cdap.Plugin;
@@ -40,6 +41,7 @@ public class GetOffsetUtils {
 
     private static final String SALESFORCE_EVENT = "event";
     private static final String SALESFORCE_REPLAY_ID = "replayId";
+    private static final String HUBSPOT_ID_FIELD = "vid";
 
     /**
      * Function for getting offset for given streaming Cdap {@link
@@ -48,6 +50,9 @@ public class GetOffsetUtils {
     public static SerializableFunction<String, Long> getOffsetFnForCdapPlugin(Class<?> pluginClass) {
         if (SalesforceStreamingSource.class.equals(pluginClass)) {
             return getOffsetFnForSalesforce();
+        }
+        if (HubspotStreamingSource.class.equals(pluginClass)) {
+            return getOffsetFnForHubspot();
         }
         throw new UnsupportedOperationException(
                 String.format("Given plugin class '%s' is not supported!", pluginClass.getName()));
@@ -77,4 +82,25 @@ public class GetOffsetUtils {
             return 0L;
         };
     }
+    /**
+     * Function for getting offset for Hubspot record that has {@link #HUBSPOT_ID_FIELD} number field.
+     */
+    private static SerializableFunction<String, Long> getOffsetFnForHubspot() {
+        return input -> {
+            if (input != null) {
+                try {
+                    HashMap<String, Object> json =
+                            GSON.fromJson(input, new TypeToken<HashMap<String, Object>>() {}.getType());
+                    checkArgumentNotNull(json, "Can not get JSON from Hubspot input string");
+                    Object id = json.get(HUBSPOT_ID_FIELD);
+                    checkArgumentNotNull(id, "Can not get ID from Hubspot input string");
+                    return ((Double) id).longValue();
+                } catch (Exception e) {
+                    LOG.error("Can not get offset from json", e);
+                }
+            }
+            return 0L;
+        };
+    }
+
 }

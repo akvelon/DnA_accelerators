@@ -93,5 +93,4 @@ class AnomalyDetection(beam.PTransform):
                 | "Encode" >> RunInference(model_handler=KeyedModelHandler(self.encoder_handler))
                 | "Concat features" >> beam.Map(lambda x: (x[0], x[1].inference.detach().numpy()))
                 | "Detect anomaly" >> RunInference(model_handler=KeyedModelHandler(self.anomaly_detection_model_handler))
-                | "Get predictions" >> beam.ParDo(DecodePrediction())
         )

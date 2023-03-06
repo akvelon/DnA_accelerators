@@ -23,22 +23,17 @@ import com.akvelon.salesforce.options.CdapSalesforceStreamingSourceOptions;
 import com.akvelon.salesforce.transforms.FormatInputTransform;
 import com.akvelon.salesforce.utils.FailsafeElementCoder;
 import com.akvelon.salesforce.utils.PluginConfigOptionsConverter;
-import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import io.cdap.plugin.salesforce.SalesforceConstants;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-
-import org.apache.beam.runners.dataflow.options.DataflowPipelineOptions;
 import org.apache.beam.sdk.Pipeline;
+import org.apache.beam.sdk.coders.Coder;
 import org.apache.beam.sdk.coders.CoderRegistry;
-import org.apache.beam.sdk.coders.DoubleCoder;
-import org.apache.beam.sdk.coders.IterableCoder;
 import org.apache.beam.sdk.coders.KvCoder;
 import org.apache.beam.sdk.coders.NullableCoder;
+import org.apache.beam.sdk.coders.RowCoder;
 import org.apache.beam.sdk.coders.StringUtf8Coder;
-import org.apache.beam.sdk.extensions.python.transforms.RunInference;
+import org.apache.beam.sdk.extensions.python.PythonExternalTransform;
 import org.apache.beam.sdk.io.TextIO;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.schemas.Schema;
@@ -186,53 +181,117 @@ public class CdapRunInference {
             jsonMessages = pipeline.apply(Create.of("{\"Id\":\"0068d00000Ch2LAAAZ\",\"IsDeleted\":\"false\",\"AccountId\":\"0018d00000Rv6YhAAJ\",\"RecordTypeId\":\"0128d000001OmbhAAC\",\"IsPrivate\":\"false\",\"Name\":\"Opportunity for McBride299\",\"Description\":\"\",\"StageName\":\"Value Proposition\",\"Amount\":\"567000.0\",\"Probability\":\"50.0\",\"ExpectedRevenue\":\"283500.0\",\"TotalOpportunityQuantity\":\"2009.0\",\"CloseDate\":\"2023-03-03\",\"Type\":\"New Business\",\"NextStep\":\"\",\"LeadSource\":\"Employee Referral\",\"IsClosed\":\"false\",\"IsWon\":\"false\",\"ForecastCategory\":\"Pipeline\",\"ForecastCategoryName\":\"Pipeline\",\"CampaignId\":\"\",\"HasOpportunityLineItem\":\"true\",\"Pricebook2Id\":\"01s8d0000078p2HAAQ\",\"OwnerId\":\"0058d000005lFP4AAM\",\"CreatedDate\":\"2022-08-15T00:00:00.000Z\",\"CreatedById\":\"0058d000005lFNaAAM\",\"LastModifiedDate\":\"2023-02-03T05:23:17.000Z\",\"LastModifiedById\":\"0058d000005lFNaAAM\",\"SystemModstamp\":\"2023-02-03T05:23:34.000Z\",\"LastActivityDate\":\"2023-01-19\",\"PushCount\":\"0\",\"LastStageChangeDate\":\"\",\"FiscalQuarter\":\"1\",\"FiscalYear\":\"2023\",\"Fiscal\":\"2023 1\",\"ContactId\":\"\",\"LastViewedDate\":\"\",\"LastReferencedDate\":\"\",\"HasOpenActivity\":\"true\",\"HasOverdueTask\":\"false\",\"LastAmountChangedHistoryId\":\"\",\"LastCloseDateChangedHistoryId\":\"\",\"DeliveryInstallationStatus__c\":\"\",\"TrackingNumber__c\":\"\",\"OrderNumber__c\":\"\",\"CurrentGenerators__c\":\"\",\"MainCompetitors__c\":\"\",\"Opportunity_Source__c\":\"AE\"}", "{\"Id\":\"0068d00000Ch2LFAAZ\",\"IsDeleted\":\"false\",\"AccountId\":\"0018d00000Rv6YaAAJ\",\"RecordTypeId\":\"0128d000001OmbhAAC\",\"IsPrivate\":\"false\",\"Name\":\"Opportunity for Collins378\",\"Description\":\"\",\"StageName\":\"Closed Won\",\"Amount\":\"446850.0\",\"Probability\":\"100.0\",\"ExpectedRevenue\":\"446850.0\",\"TotalOpportunityQuantity\":\"1961.0\",\"CloseDate\":\"2022-04-08\",\"Type\":\"New Business\",\"NextStep\":\"\",\"LeadSource\":\"Employee Referral\",\"IsClosed\":\"true\",\"IsWon\":\"true\",\"ForecastCategory\":\"Closed\",\"ForecastCategoryName\":\"Closed\",\"CampaignId\":\"\",\"HasOpportunityLineItem\":\"true\",\"Pricebook2Id\":\"01s8d0000078p2HAAQ\",\"OwnerId\":\"0058d000005lFOwAAM\",\"CreatedDate\":\"2022-03-07T00:00:00.000Z\",\"CreatedById\":\"0058d000005lFNaAAM\",\"LastModifiedDate\":\"2023-02-03T05:23:23.000Z\",\"LastModifiedById\":\"0058d000005lFNaAAM\",\"SystemModstamp\":\"2023-02-03T05:23:23.000Z\",\"LastActivityDate\":\"\",\"PushCount\":\"0\",\"LastStageChangeDate\":\"\",\"FiscalQuarter\":\"2\",\"FiscalYear\":\"2022\",\"Fiscal\":\"2022 2\",\"ContactId\":\"\",\"LastViewedDate\":\"\",\"LastReferencedDate\":\"\",\"HasOpenActivity\":\"false\",\"HasOverdueTask\":\"false\",\"LastAmountChangedHistoryId\":\"0088d00000Z2zt7AAB\",\"LastCloseDateChangedHistoryId\":\"\",\"DeliveryInstallationStatus__c\":\"\",\"TrackingNumber__c\":\"\",\"OrderNumber__c\":\"\",\"CurrentGenerators__c\":\"\",\"MainCompetitors__c\":\"\",\"Opportunity_Source__c\":\"AE\"}"));
         }
 
-        Schema schema =
-                Schema.of(
-                        Schema.Field.of("example", Schema.FieldType.array(Schema.FieldType.DOUBLE)),
-                        Schema.Field.of("inference", Schema.FieldType.INT64));
+//        PCollection<KV<String, Iterable<Double>>> input = jsonMessages
+//                .apply(
+//                        MapElements.into(new TypeDescriptor<KV<String, Iterable<Double>>>() {
+//                                })
+//                                .via(
+//                                        json -> {
+//                                            String id;
+//                                            double amount;
+//                                            LOG.info("Start processing EVENT");
+//
+//                                            if (!isSimple) {
+//                                                Map<Object, Object> eventMap = GSON.fromJson(json, Map.class);
+//                                                Map<Object, Object> map = (Map<Object, Object>) eventMap.get(SALESFORCE_SOBJECT);
+//                                                id = (String) map.get(SALESFORCE_SOBJECT_ID);
+////                                                id = eventMap.get("vid").toString();
+//                                                amount = 123d;
+//                                            } else {
+//                                                Map<Object, Object> map = GSON.fromJson(json, Map.class);
+//                                                id = (String) map.get("Id");
+//                                                amount = Double.parseDouble((String) map.get("Amount"));
+//                                            }
+//                                            LOG.info("PROCESSING RECORD WITH ID {}", id);
+//                                            List<Double> list = new ArrayList<>();
+//                                            list.add(amount);
+//                                            return KV.of(id, list);
+//                                        }))
+//                .setCoder(KvCoder.of(StringUtf8Coder.of(), IterableCoder.of(DoubleCoder.of())));
 
-        PCollection<KV<String, Iterable<Double>>> input = jsonMessages
+        Schema rowSchema =  Schema.of(
+                Schema.Field.of("Id", Schema.FieldType.STRING),
+                Schema.Field.of("AccountType", Schema.FieldType.STRING),
+                Schema.Field.of("Amount", Schema.FieldType.INT64),
+                Schema.Field.of("BillingCountry", Schema.FieldType.STRING),
+                Schema.Field.of("IsClosed", Schema.FieldType.BOOLEAN),
+                Schema.Field.of("ForecastCategory", Schema.FieldType.STRING),
+                Schema.Field.of("Industry", Schema.FieldType.STRING),
+                Schema.Field.of("OpportunitySource", Schema.FieldType.STRING),
+                Schema.Field.of("OpportunityType", Schema.FieldType.STRING),
+                Schema.Field.of("OwnerRole", Schema.FieldType.STRING),
+                Schema.Field.of("ProductFamily", Schema.FieldType.STRING),
+                Schema.Field.of("Segment", Schema.FieldType.STRING),
+                Schema.Field.of("Stage", Schema.FieldType.STRING),
+                Schema.Field.of("IsWon", Schema.FieldType.BOOLEAN));
+        PCollection<Row> input = jsonMessages
                 .apply(
-                        MapElements.into(new TypeDescriptor<KV<String, Iterable<Double>>>() {
-                                })
+                        MapElements.into(new TypeDescriptor<Row>() {})
                                 .via(
                                         json -> {
-                                            String id;
-                                            double amount;
-                                            LOG.info("Start processing EVENT");
-
+                                            String id = "", accountType = "no", billingCountry = "no", forecastCategory = "no", industry = "no", opportunitySource = "no",
+                                            opportunityType = "no", ownerRole = "no", productFamily = "no", segment = "no", stage = "no";
+                                            boolean isClosed = false, isWon = false;
+                                            long amount = 123;
                                             if (!isSimple) {
                                                 Map<Object, Object> eventMap = GSON.fromJson(json, Map.class);
                                                 Map<Object, Object> map = (Map<Object, Object>) eventMap.get(SALESFORCE_SOBJECT);
                                                 id = (String) map.get(SALESFORCE_SOBJECT_ID);
-//                                                id = eventMap.get("vid").toString();
-                                                amount = 123d;
                                             } else {
                                                 Map<Object, Object> map = GSON.fromJson(json, Map.class);
                                                 id = (String) map.get("Id");
-                                                amount = Double.parseDouble((String) map.get("Amount"));
+                                                opportunityType = (String) map.get("Type");
+                                                stage = (String) map.get("StageName");
+                                                forecastCategory = (String) map.get("ForecastCategory");
+                                                amount = (long) Double.parseDouble((String) map.get("Amount"));
+                                                isWon = Boolean.parseBoolean((String) map.get("IsWon"));
+                                                isClosed = Boolean.parseBoolean((String) map.get("IsClosed"));
                                             }
-                                            LOG.info("PROCESSING RECORD WITH ID {}", id);
-                                            List<Double> list = new ArrayList<>();
-                                            list.add(amount);
-                                            return KV.of(id, list);
-                                        }))
-                .setCoder(KvCoder.of(StringUtf8Coder.of(), IterableCoder.of(DoubleCoder.of())));
+//                                            List<String> list = new ArrayList<>();
+//                                            list.add(id);
+//                                            list.add(accountType);
+//                                            list.add(String.valueOf(amount));
+//                                            list.add(billingCountry);
+//                                            list.add(Boolean.toString(isClosed));
+//                                            list.add(forecastCategory);
+//                                            list.add(industry);
+//                                            list.add(opportunitySource);
+//                                            list.add(opportunityType);
+//                                            list.add(ownerRole);
+//                                            list.add(productFamily);
+//                                            list.add(segment);
+//                                            list.add(stage);
+//                                            list.add(Boolean.toString(isWon));
+//                                            return list;
+                                            return Row.withSchema(rowSchema)
+                                                    .attachValues(id, accountType, amount, billingCountry, isClosed, forecastCategory,
+                                                            industry, opportunitySource, opportunityType, ownerRole, productFamily,
+                                                            segment, stage, isWon);
+                                        }
+                                )
+                ).setCoder(RowCoder.of(rowSchema));
 
+        Schema outSchema =
+                Schema.of(
+                        Schema.Field.of("example", Schema.FieldType.DOUBLE),
+                        Schema.Field.of("inference", Schema.FieldType.INT64));
         PCollection<String> outputLines = null;
         if (!options.getOutputDeadletterTable().contains("only")) {
-            RunInference<KV<String, Row>> runInference =
-                    RunInference.ofKVs(getModelLoaderScript(), schema, StringUtf8Coder.of())
-                            .withKwarg(MODEL_URI_PARAM, options.getModelUri())
-                            .withExpansionService(options.getExpansionService());
-            runInference.withExtraPackages(Lists.newArrayList("hdbscan"));
-            outputLines = input.apply("RunInference_Anomaly", runInference)
+            Coder<KV<String, Row>> outputCoder =
+                    KvCoder.of(StringUtf8Coder.of(), RowCoder.of(outSchema));
+
+            outputLines =
+                    input.apply(
+                    PythonExternalTransform.<PCollection<?>, PCollection<KV<String, Row>>>from(
+                                    "anomaly_detection.AnomalyDetection", options.getExpansionService())
+                            .withOutputCoder(outputCoder))
+//                            .withExtraPackages(Lists.newArrayList("hdbscan", "torch", "autoencoder", "category-encoders", "autoembedder", "akvelon-test-anomaly-detection")))
                     .apply("FormatOutput", MapElements.via(new FormatOutput()));
         }  else if (!noOutput) {
-            outputLines = input.apply("FormatToString", MapElements.via(new SimpleFunction<KV<String, Iterable<Double>>, String>() {
+            outputLines = input.apply("FormatToString", MapElements.via(new SimpleFunction<Row, String>() {
                 @Override
-                public String apply(KV<String, Iterable<Double>> input) {
-                    return input.getKey();
+                public String apply(Row input) {
+                    return input.getValue("Id");
                 }
             }));
         }

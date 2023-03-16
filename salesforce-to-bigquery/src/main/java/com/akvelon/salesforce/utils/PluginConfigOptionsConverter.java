@@ -17,11 +17,9 @@
  */
 package com.akvelon.salesforce.utils;
 
+import com.akvelon.salesforce.options.CdapSalesforceSourceOptions;
 import com.akvelon.salesforce.options.CdapSalesforceStreamingSourceOptions;
 import io.cdap.plugin.common.Constants;
-import io.cdap.plugin.hubspot.common.BaseHubspotConfig;
-import io.cdap.plugin.hubspot.source.streaming.HubspotStreamingSourceConfig;
-import io.cdap.plugin.hubspot.source.streaming.PullFrequency;
 import io.cdap.plugin.salesforce.SalesforceConstants;
 import io.cdap.plugin.salesforce.plugin.source.batch.util.SalesforceSourceConstants;
 import java.util.Map;
@@ -41,10 +39,24 @@ public class PluginConfigOptionsConverter {
     private static final String SALESFORCE_REFERENCED_NOTIFY_FOR_FIELDS = "Referenced";
     private static final String SALESFORCE_ENABLED_NOTIFY = "Enabled";
 
+    /** Returns map of parameters for Cdap Salesforce batch source plugin. */
+    public static Map<String, Object> salesforceBatchSourceOptionsToParamsMap(
+            CdapSalesforceSourceOptions options) {
+        return ImmutableMap.<String, Object>builder()
+                .put(Constants.Reference.REFERENCE_NAME, options.getReferenceName())
+                .put(SalesforceConstants.PROPERTY_USERNAME, options.getUsername())
+                .put(SalesforceConstants.PROPERTY_PASSWORD, options.getPassword())
+                .put(SalesforceConstants.PROPERTY_SECURITY_TOKEN, options.getSecurityToken())
+                .put(SalesforceConstants.PROPERTY_CONSUMER_KEY, options.getConsumerKey())
+                .put(SalesforceConstants.PROPERTY_CONSUMER_SECRET, options.getConsumerSecret())
+                .put(SalesforceConstants.PROPERTY_LOGIN_URL, options.getLoginUrl())
+                .put(SalesforceSourceConstants.PROPERTY_SOBJECT_NAME, options.getSObjectName())
+                .build();
+    }
+
     /** Returns map of parameters for Cdap Salesforce streaming source plugin. */
     public static Map<String, Object> salesforceStreamingSourceOptionsToParamsMap(
             CdapSalesforceStreamingSourceOptions options) {
-        //TODO: validate secured parameters
         return ImmutableMap.<String, Object>builder()
                 .put(Constants.Reference.REFERENCE_NAME, options.getReferenceName())
                 .put(SALESFORCE_STREAMING_PUSH_TOPIC_NAME, options.getPushTopicName())
@@ -60,22 +72,5 @@ public class PluginConfigOptionsConverter {
                 .put(SALESFORCE_PUSH_TOPIC_NOTIFY_DELETE, SALESFORCE_ENABLED_NOTIFY)
                 .put(SALESFORCE_PUSH_TOPIC_NOTIFY_FOR_FIELDS, SALESFORCE_REFERENCED_NOTIFY_FOR_FIELDS)
                 .build();
-    }
-
-    /** Returns map of parameters for Cdap Hubspot plugins. */
-    public static Map<String, Object> hubspotOptionsToParamsMap(CdapSalesforceStreamingSourceOptions options) {
-        String apiServerUrl = options.getVaultToken();
-        ImmutableMap.Builder<String, Object> builder =
-                ImmutableMap.<String, Object>builder()
-                        .put(
-                                BaseHubspotConfig.API_SERVER_URL,
-                                apiServerUrl != null ? apiServerUrl : BaseHubspotConfig.DEFAULT_API_SERVER_URL)
-                        .put(BaseHubspotConfig.AUTHORIZATION_TOKEN, options.getSecurityToken())
-                        .put(BaseHubspotConfig.OBJECT_TYPE, options.getSObjectName())
-                        .put(Constants.Reference.REFERENCE_NAME, options.getReferenceName());
-        // Hubspot PullFrequency value will be ignored as pull frequency is implemented differently in
-        // CdapIO, but it still needs to be passed for the plugin to work correctly.
-        builder.put(HubspotStreamingSourceConfig.PULL_FREQUENCY, PullFrequency.MINUTES_15.getName());
-        return builder.build();
     }
 }

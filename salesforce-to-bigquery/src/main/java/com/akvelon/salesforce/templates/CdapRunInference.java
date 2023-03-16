@@ -21,8 +21,11 @@ import static com.akvelon.salesforce.utils.VaultUtils.getSalesforceCredentialsFr
 
 import com.akvelon.salesforce.options.CdapSalesforceStreamingSourceOptions;
 import com.akvelon.salesforce.transforms.FormatInputTransform;
+import com.akvelon.salesforce.utils.ErrorConverters;
+import com.akvelon.salesforce.utils.FailsafeElement;
 import com.akvelon.salesforce.utils.FailsafeElementCoder;
 import com.akvelon.salesforce.utils.PluginConfigOptionsConverter;
+import com.google.api.services.bigquery.model.TableRow;
 import com.google.gson.Gson;
 import io.cdap.plugin.salesforce.SalesforceConstants;
 import java.util.Map;
@@ -34,29 +37,34 @@ import org.apache.beam.sdk.coders.NullableCoder;
 import org.apache.beam.sdk.coders.RowCoder;
 import org.apache.beam.sdk.coders.StringUtf8Coder;
 import org.apache.beam.sdk.extensions.python.PythonExternalTransform;
-import org.apache.beam.sdk.io.TextIO;
+import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO;
+import org.apache.beam.sdk.io.gcp.bigquery.InsertRetryPolicy;
+import org.apache.beam.sdk.io.gcp.bigquery.WriteResult;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.schemas.Schema;
-import org.apache.beam.sdk.transforms.Create;
+import org.apache.beam.sdk.transforms.Flatten;
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.SimpleFunction;
 import org.apache.beam.sdk.transforms.windowing.AfterProcessingTime;
-import org.apache.beam.sdk.transforms.windowing.FixedWindows;
 import org.apache.beam.sdk.transforms.windowing.GlobalWindows;
 import org.apache.beam.sdk.transforms.windowing.Repeatedly;
 import org.apache.beam.sdk.transforms.windowing.Window;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.sdk.values.PCollectionList;
+import org.apache.beam.sdk.values.PCollectionTuple;
 import org.apache.beam.sdk.values.Row;
+import org.apache.beam.sdk.values.TupleTag;
 import org.apache.beam.sdk.values.TypeDescriptor;
+import org.apache.commons.lang3.ObjectUtils;
 import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * The {@link CdapRunInference} pipeline is a streaming pipeline which ingests data in
- * JSON format from CDAP Salesforce, and outputs the resulting records to BigQuery table. Salesforce
- * parameters and output BigQuery table file path are specified by the user as template parameters. <br>
+ * JSON format from CDAP Salesforce, runs Python RunInference and outputs the resulting records to BigQuery table.
+ * Salesforce parameters and output BigQuery table file path are specified by the user as template parameters. <br>
  *
  * <p><b>Example Usage</b>
  * <p>
@@ -91,7 +99,82 @@ public class CdapRunInference {
     private static final Gson GSON = new Gson();
     private static final String SALESFORCE_SOBJECT = "sobject";
     private static final String SALESFORCE_SOBJECT_ID = "Id";
-    private static final String MODEL_URI_PARAM = "model_uri";
+
+    /**
+     * The tag for the main output of the json transformation.
+     */
+    static final TupleTag<TableRow> TRANSFORM_OUT = new TupleTag<TableRow>() {
+    };
+
+    /**
+     * The tag for the dead-letter output of the json to table row transform.
+     */
+    static final TupleTag<FailsafeElement<String, String>> TRANSFORM_DEADLETTER_OUT =
+            new TupleTag<FailsafeElement<String, String>>() {
+            };
+
+    /**
+     * String/String Coder for FailsafeElement.
+     */
+    private static final FailsafeElementCoder<String, String> FAILSAFE_ELEMENT_CODER =
+            FailsafeElementCoder.of(
+                    NullableCoder.of(StringUtf8Coder.of()), NullableCoder.of(StringUtf8Coder.of()));
+
+    public static final String DEADLETTER_SCHEMA =
+            "{\n"
+                    + "  \"fields\": [\n"
+                    + "    {\n"
+                    + "      \"name\": \"timestamp\",\n"
+                    + "      \"type\": \"TIMESTAMP\",\n"
+                    + "      \"mode\": \"REQUIRED\"\n"
+                    + "    },\n"
+                    + "    {\n"
+                    + "      \"name\": \"payloadString\",\n"
+                    + "      \"type\": \"STRING\",\n"
+                    + "      \"mode\": \"REQUIRED\"\n"
+                    + "    },\n"
+                    + "    {\n"
+                    + "      \"name\": \"payloadBytes\",\n"
+                    + "      \"type\": \"BYTES\",\n"
+                    + "      \"mode\": \"REQUIRED\"\n"
+                    + "    },\n"
+                    + "    {\n"
+                    + "      \"name\": \"attributes\",\n"
+                    + "      \"type\": \"RECORD\",\n"
+                    + "      \"mode\": \"REPEATED\",\n"
+                    + "      \"fields\": [\n"
+                    + "        {\n"
+                    + "          \"name\": \"key\",\n"
+                    + "          \"type\": \"STRING\",\n"
+                    + "          \"mode\": \"NULLABLE\"\n"
+                    + "        },\n"
+                    + "        {\n"
+                    + "          \"name\": \"value\",\n"
+                    + "          \"type\": \"STRING\",\n"
+                    + "          \"mode\": \"NULLABLE\"\n"
+                    + "        }\n"
+                    + "      ]\n"
+                    + "    },\n"
+                    + "    {\n"
+                    + "      \"name\": \"errorMessage\",\n"
+                    + "      \"type\": \"STRING\",\n"
+                    + "      \"mode\": \"NULLABLE\"\n"
+                    + "    },\n"
+                    + "    {\n"
+                    + "      \"name\": \"stacktrace\",\n"
+                    + "      \"type\": \"STRING\",\n"
+                    + "      \"mode\": \"NULLABLE\"\n"
+                    + "    }\n"
+                    + "  ]\n"
+                    + "}";
+
+    /**
+     * The default suffix for error tables if dead letter table is not specified.
+     */
+    private static final String DEFAULT_DEADLETTER_TABLE_SUFFIX = "_error_records";
+    public static final String DEFAULT_PYTHON_SDK_OVERRIDES = "apache/beam_python3.9_sdk:2.45.0," +
+            "gcr.io/dataflow-template-demo-374507/anomaly-detection-expansion-service:latest";
+    public static final String ANOMALY_DETECTION_TRANFORM = "anomaly_detection.AnomalyDetection";
 
     /**
      * Main entry point for pipeline execution.
@@ -104,6 +187,7 @@ public class CdapRunInference {
                         .withValidation()
                         .as(CdapSalesforceStreamingSourceOptions.class);
 
+            options.setSdkHarnessContainerImageOverrides(DEFAULT_PYTHON_SDK_OVERRIDES);
         // Create the pipeline
         Pipeline pipeline = Pipeline.create(options);
 
@@ -139,76 +223,40 @@ public class CdapRunInference {
                             + "Trying to retrieve them from pipeline options.");
         }
         Map<String, Object> paramsMap =
-//                PluginConfigOptionsConverter.hubspotOptionsToParamsMap(options);
                 PluginConfigOptionsConverter.salesforceStreamingSourceOptionsToParamsMap(options);
         LOG.info("Starting Cdap-Salesforce-streaming-to-txt pipeline with parameters: {}", paramsMap);
 
         /*
          * Steps:
          *  1) Read messages in from Cdap Salesforce
+         *  2) Transform messages from Cdap Salesforce to Rows
+         *  3) Run Python RunInference Anomaly Detection transform
+         *  4) Transform the RunInference result into TableRows
+         *  5) Write the successful records out to BigQuery
+         *  6) Write failed records out to BigQuery
+         *  7) Insert records that failed BigQuery inserts into a deadletter table.
          */
 
         /*
          * Step #1: Read messages in from Cdap Salesforce
          */
         PCollection<String> jsonMessages;
-        boolean isSimple = options.getOutputDeadletterTable().contains("simple");
-        boolean noOutput = options.getOutputDeadletterTable().contains("without");
-        if (!isSimple) {
-            Window<String> window;
-            if (options.getOutputDeadletterTable().contains("global")) {
-                window = Window.<String>into(new GlobalWindows())
-                        .triggering(Repeatedly.forever(AfterProcessingTime.pastFirstElementInPane()
-                                .plusDelayOf(Duration.ZERO)))
-                        .discardingFiredPanes()
-                        .withAllowedLateness(Duration.ZERO);
-            } else {
-                window = Window.<String>into(FixedWindows.of(Duration.standardSeconds(60)))
-                        .triggering(Repeatedly.forever(AfterProcessingTime.pastFirstElementInPane()
-                                .plusDelayOf(Duration.ZERO)))
-                        .discardingFiredPanes()
-                        .withAllowedLateness(Duration.ZERO);
-            }
-            jsonMessages = pipeline
-                    .apply(
-                            "readFromSalesforceSparkReceiver",
-                            FormatInputTransform.readFromSalesforceSparkReceiver(
-                                    paramsMap, options.getPullFrequencySec(), options.getStartOffset()))
-                    .setCoder(StringUtf8Coder.of())
-                    .apply("window", window);
+        Window<String> window = Window.<String>into(new GlobalWindows())
+                    .triggering(Repeatedly.forever(AfterProcessingTime.pastFirstElementInPane()
+                            .plusDelayOf(Duration.ZERO)))
+                    .discardingFiredPanes()
+                    .withAllowedLateness(Duration.ZERO);
+        jsonMessages = pipeline
+                .apply(
+                        "readFromSalesforceSparkReceiver",
+                        FormatInputTransform.readFromSalesforceSparkReceiver(
+                                paramsMap, options.getPullFrequencySec(), options.getStartOffset()))
+                .setCoder(StringUtf8Coder.of())
+                .apply("window", window);
 
-        } else {
-            jsonMessages = pipeline.apply(Create.of("{\"Id\":\"0068d00000Ch2LAAAZ\",\"IsDeleted\":\"false\",\"AccountId\":\"0018d00000Rv6YhAAJ\",\"RecordTypeId\":\"0128d000001OmbhAAC\",\"IsPrivate\":\"false\",\"Name\":\"Opportunity for McBride299\",\"Description\":\"\",\"StageName\":\"Value Proposition\",\"Amount\":\"567000.0\",\"Probability\":\"50.0\",\"ExpectedRevenue\":\"283500.0\",\"TotalOpportunityQuantity\":\"2009.0\",\"CloseDate\":\"2023-03-03\",\"Type\":\"New Business\",\"NextStep\":\"\",\"LeadSource\":\"Employee Referral\",\"IsClosed\":\"false\",\"IsWon\":\"false\",\"ForecastCategory\":\"Pipeline\",\"ForecastCategoryName\":\"Pipeline\",\"CampaignId\":\"\",\"HasOpportunityLineItem\":\"true\",\"Pricebook2Id\":\"01s8d0000078p2HAAQ\",\"OwnerId\":\"0058d000005lFP4AAM\",\"CreatedDate\":\"2022-08-15T00:00:00.000Z\",\"CreatedById\":\"0058d000005lFNaAAM\",\"LastModifiedDate\":\"2023-02-03T05:23:17.000Z\",\"LastModifiedById\":\"0058d000005lFNaAAM\",\"SystemModstamp\":\"2023-02-03T05:23:34.000Z\",\"LastActivityDate\":\"2023-01-19\",\"PushCount\":\"0\",\"LastStageChangeDate\":\"\",\"FiscalQuarter\":\"1\",\"FiscalYear\":\"2023\",\"Fiscal\":\"2023 1\",\"ContactId\":\"\",\"LastViewedDate\":\"\",\"LastReferencedDate\":\"\",\"HasOpenActivity\":\"true\",\"HasOverdueTask\":\"false\",\"LastAmountChangedHistoryId\":\"\",\"LastCloseDateChangedHistoryId\":\"\",\"DeliveryInstallationStatus__c\":\"\",\"TrackingNumber__c\":\"\",\"OrderNumber__c\":\"\",\"CurrentGenerators__c\":\"\",\"MainCompetitors__c\":\"\",\"Opportunity_Source__c\":\"AE\"}", "{\"Id\":\"0068d00000Ch2LFAAZ\",\"IsDeleted\":\"false\",\"AccountId\":\"0018d00000Rv6YaAAJ\",\"RecordTypeId\":\"0128d000001OmbhAAC\",\"IsPrivate\":\"false\",\"Name\":\"Opportunity for Collins378\",\"Description\":\"\",\"StageName\":\"Closed Won\",\"Amount\":\"446850.0\",\"Probability\":\"100.0\",\"ExpectedRevenue\":\"446850.0\",\"TotalOpportunityQuantity\":\"1961.0\",\"CloseDate\":\"2022-04-08\",\"Type\":\"New Business\",\"NextStep\":\"\",\"LeadSource\":\"Employee Referral\",\"IsClosed\":\"true\",\"IsWon\":\"true\",\"ForecastCategory\":\"Closed\",\"ForecastCategoryName\":\"Closed\",\"CampaignId\":\"\",\"HasOpportunityLineItem\":\"true\",\"Pricebook2Id\":\"01s8d0000078p2HAAQ\",\"OwnerId\":\"0058d000005lFOwAAM\",\"CreatedDate\":\"2022-03-07T00:00:00.000Z\",\"CreatedById\":\"0058d000005lFNaAAM\",\"LastModifiedDate\":\"2023-02-03T05:23:23.000Z\",\"LastModifiedById\":\"0058d000005lFNaAAM\",\"SystemModstamp\":\"2023-02-03T05:23:23.000Z\",\"LastActivityDate\":\"\",\"PushCount\":\"0\",\"LastStageChangeDate\":\"\",\"FiscalQuarter\":\"2\",\"FiscalYear\":\"2022\",\"Fiscal\":\"2022 2\",\"ContactId\":\"\",\"LastViewedDate\":\"\",\"LastReferencedDate\":\"\",\"HasOpenActivity\":\"false\",\"HasOverdueTask\":\"false\",\"LastAmountChangedHistoryId\":\"0088d00000Z2zt7AAB\",\"LastCloseDateChangedHistoryId\":\"\",\"DeliveryInstallationStatus__c\":\"\",\"TrackingNumber__c\":\"\",\"OrderNumber__c\":\"\",\"CurrentGenerators__c\":\"\",\"MainCompetitors__c\":\"\",\"Opportunity_Source__c\":\"AE\"}"));
-        }
-
-//        PCollection<KV<String, Iterable<Double>>> input = jsonMessages
-//                .apply(
-//                        MapElements.into(new TypeDescriptor<KV<String, Iterable<Double>>>() {
-//                                })
-//                                .via(
-//                                        json -> {
-//                                            String id;
-//                                            double amount;
-//                                            LOG.info("Start processing EVENT");
-//
-//                                            if (!isSimple) {
-//                                                Map<Object, Object> eventMap = GSON.fromJson(json, Map.class);
-//                                                Map<Object, Object> map = (Map<Object, Object>) eventMap.get(SALESFORCE_SOBJECT);
-//                                                id = (String) map.get(SALESFORCE_SOBJECT_ID);
-////                                                id = eventMap.get("vid").toString();
-//                                                amount = 123d;
-//                                            } else {
-//                                                Map<Object, Object> map = GSON.fromJson(json, Map.class);
-//                                                id = (String) map.get("Id");
-//                                                amount = Double.parseDouble((String) map.get("Amount"));
-//                                            }
-//                                            LOG.info("PROCESSING RECORD WITH ID {}", id);
-//                                            List<Double> list = new ArrayList<>();
-//                                            list.add(amount);
-//                                            return KV.of(id, list);
-//                                        }))
-//                .setCoder(KvCoder.of(StringUtf8Coder.of(), IterableCoder.of(DoubleCoder.of())));
-
+        /*
+         * Step #2: Transform messages from Cdap Salesforce to Rows
+         */
         Schema rowSchema =  Schema.of(
                 Schema.Field.of("Id", Schema.FieldType.STRING),
                 Schema.Field.of("AccountType", Schema.FieldType.STRING),
@@ -229,40 +277,19 @@ public class CdapRunInference {
                         MapElements.into(new TypeDescriptor<Row>() {})
                                 .via(
                                         json -> {
-                                            String id = "", accountType = "no", billingCountry = "no", forecastCategory = "no", industry = "no", opportunitySource = "no",
-                                            opportunityType = "no", ownerRole = "no", productFamily = "no", segment = "no", stage = "no";
-                                            boolean isClosed = false, isWon = false;
-                                            long amount = 123;
-                                            if (!isSimple) {
-                                                Map<Object, Object> eventMap = GSON.fromJson(json, Map.class);
-                                                Map<Object, Object> map = (Map<Object, Object>) eventMap.get(SALESFORCE_SOBJECT);
-                                                id = (String) map.get(SALESFORCE_SOBJECT_ID);
-                                            } else {
-                                                Map<Object, Object> map = GSON.fromJson(json, Map.class);
-                                                id = (String) map.get("Id");
-                                                opportunityType = (String) map.get("Type");
-                                                stage = (String) map.get("StageName");
-                                                forecastCategory = (String) map.get("ForecastCategory");
-                                                amount = (long) Double.parseDouble((String) map.get("Amount"));
-                                                isWon = Boolean.parseBoolean((String) map.get("IsWon"));
-                                                isClosed = Boolean.parseBoolean((String) map.get("IsClosed"));
-                                            }
-//                                            List<String> list = new ArrayList<>();
-//                                            list.add(id);
-//                                            list.add(accountType);
-//                                            list.add(String.valueOf(amount));
-//                                            list.add(billingCountry);
-//                                            list.add(Boolean.toString(isClosed));
-//                                            list.add(forecastCategory);
-//                                            list.add(industry);
-//                                            list.add(opportunitySource);
-//                                            list.add(opportunityType);
-//                                            list.add(ownerRole);
-//                                            list.add(productFamily);
-//                                            list.add(segment);
-//                                            list.add(stage);
-//                                            list.add(Boolean.toString(isWon));
-//                                            return list;
+                                            String id, accountType = "no", billingCountry = "no", forecastCategory, industry = "no", opportunitySource = "no",
+                                            opportunityType, ownerRole = "no", productFamily = "no", segment = "no", stage;
+                                            boolean isClosed, isWon;
+                                            long amount;
+                                            Map<Object, Object> eventMap = GSON.fromJson(json, Map.class);
+                                            Map<Object, Object> map = (Map<Object, Object>) eventMap.get(SALESFORCE_SOBJECT);
+                                            id = (String) map.get(SALESFORCE_SOBJECT_ID);
+                                            opportunityType = (String) map.get("Type");
+                                            stage = (String) map.get("StageName");
+                                            forecastCategory = (String) map.get("ForecastCategory");
+                                            amount = (long) Double.parseDouble((String) map.get("Amount"));
+                                            isWon = Boolean.parseBoolean((String) map.get("IsWon"));
+                                            isClosed = Boolean.parseBoolean((String) map.get("IsClosed"));
                                             return Row.withSchema(rowSchema)
                                                     .attachValues(id, accountType, amount, billingCountry, isClosed, forecastCategory,
                                                             industry, opportunitySource, opportunityType, ownerRole, productFamily,
@@ -271,71 +298,114 @@ public class CdapRunInference {
                                 )
                 ).setCoder(RowCoder.of(rowSchema));
 
+        /*
+         * Step #3: Run Python RunInference Anomaly Detection transform
+         */
         Schema outSchema =
                 Schema.of(
                         Schema.Field.of("example", Schema.FieldType.DOUBLE),
                         Schema.Field.of("inference", Schema.FieldType.INT64));
-        PCollection<String> outputLines = null;
-        if (!options.getOutputDeadletterTable().contains("only")) {
-            Coder<KV<String, Row>> outputCoder =
+        Coder<KV<String, Row>> outputCoder =
                     KvCoder.of(StringUtf8Coder.of(), RowCoder.of(outSchema));
 
-            outputLines =
+        PCollection<String> outputLines =
                     input.apply(
                     PythonExternalTransform.<PCollection<?>, PCollection<KV<String, Row>>>from(
-                                    "anomaly_detection.AnomalyDetection", options.getExpansionService())
+                                    ANOMALY_DETECTION_TRANFORM, options.getExpansionService())
                             .withOutputCoder(outputCoder))
-//                            .withExtraPackages(Lists.newArrayList("hdbscan", "torch", "autoencoder", "category-encoders", "autoembedder", "akvelon-test-anomaly-detection")))
                     .apply("FormatOutput", MapElements.via(new FormatOutput()));
-        }  else if (!noOutput) {
-            outputLines = input.apply("FormatToString", MapElements.via(new SimpleFunction<Row, String>() {
-                @Override
-                public String apply(Row input) {
-                    return input.getValue("Id");
-                }
-            }));
-        }
 
-        if (!isSimple) {
-            if (!noOutput) {
-                outputLines
-                        .apply("WriteResults", TextIO.write().withWindowedWrites().withNumShards(1)
+        /*
+         * Step #4: Transform the RunInference result into TableRows
+         */
+        PCollectionTuple tableRows = outputLines.apply("ConvertMessageToTableRow", new CdapSalesforceStreamingToBigQuery.JsonToTableRow());
+
+        /*
+         * Step #5: Write the successful records out to BigQuery
+         */
+        WriteResult writeResult = tableRows
+                .get(TRANSFORM_OUT)
+                .apply(
+                        "WriteSuccessfulRecords",
+                        BigQueryIO.writeTableRows()
+                                .withoutValidation()
+                                .withCreateDisposition(BigQueryIO.Write.CreateDisposition.CREATE_NEVER)
+                                .withWriteDisposition(BigQueryIO.Write.WriteDisposition.WRITE_APPEND)
+                                .withExtendedErrorInfo()
+                                .withMethod(BigQueryIO.Write.Method.STREAMING_INSERTS)
+                                .withFailedInsertRetryPolicy(InsertRetryPolicy.retryTransientErrors())
                                 .to(options.getOutputTableSpec()));
-            }
-        } else {
-            outputLines.apply(TextIO.write().to(options.getOutputTableSpec()));
-        }
+
+        /*
+         * Step 5 Contd.
+         * Elements that failed inserts into BigQuery are extracted and converted to FailsafeElement
+         */
+        PCollection<FailsafeElement<String, String>> failedInserts =
+                writeResult
+                        .getFailedInsertsWithErr()
+                        .apply(
+                                "WrapInsertionErrors",
+                                MapElements.into(FAILSAFE_ELEMENT_CODER.getEncodedTypeDescriptor())
+                                        .via(CdapSalesforceStreamingToBigQuery::wrapBigQueryInsertError))
+                        .setCoder(FAILSAFE_ELEMENT_CODER);
+
+        /*
+         * Step #6: Write failed records out to BigQuery
+         */
+        PCollectionList.of(tableRows.get(TRANSFORM_DEADLETTER_OUT))
+                .apply("Flatten", Flatten.pCollections())
+                .apply(
+                        "WriteTransformationFailedRecords",
+                        ErrorConverters.WriteSalesforceMessageErrors.newBuilder()
+                                .setErrorRecordsTable(
+                                        ObjectUtils.firstNonNull(
+                                                options.getOutputDeadletterTable(),
+                                                options.getOutputTableSpec() + DEFAULT_DEADLETTER_TABLE_SUFFIX))
+                                .setErrorRecordsTableSchema(DEADLETTER_SCHEMA)
+                                .build());
+
+        /*
+         * Step #7: Insert records that failed BigQuery inserts into a deadletter table.
+         */
+        failedInserts.apply(
+                "WriteInsertionFailedRecords",
+                ErrorConverters.WriteStringMessageErrors.newBuilder()
+                        .setErrorRecordsTable(
+                                ObjectUtils.firstNonNull(
+                                        options.getOutputDeadletterTable(),
+                                        options.getOutputTableSpec() + DEFAULT_DEADLETTER_TABLE_SUFFIX))
+                        .setErrorRecordsTableSchema(DEADLETTER_SCHEMA)
+                        .build());
 
         pipeline.run();
-    }
-
-    private static String getModelLoaderScript() {
-        String s = "import hdbscan\n";
-        s = s + "from apache_beam.ml.inference.sklearn_inference import SklearnModelHandlerNumpy, ModelFileType\n";
-        s = s + "from apache_beam.ml.inference.base import RunInference, PredictionResult, KeyedModelHandler\n";
-        s = s + "def get_model_handler(model_uri):\n\n";
-        s = s + "  class CustomSklearnModelHandlerNumpy(SklearnModelHandlerNumpy):\n";
-        s = s + "    def run_inference(self, batch, model, inference_args=None):\n";
-        s = s + "      predictions = hdbscan.approximate_predict(model, batch)\n";
-        s = s + "      return [PredictionResult(x, y) for x, y in zip(batch, predictions[0])]\n\n";
-        s = s + "  anomaly_detection_model_handler = CustomSklearnModelHandlerNumpy(model_uri=model_uri, model_file_type=ModelFileType.JOBLIB)\n\n";
-        s = s + "  return KeyedModelHandler(anomaly_detection_model_handler)";
-        return s;
     }
 
     /** Formats the output. */
     static class FormatOutput extends SimpleFunction<KV<String, Row>, String> {
 
         public static final String INFERENCE = "inference";
+        private static final Gson GSON = new Gson();
 
         @Override
         public String apply(KV<String, Row> input) {
             if (input != null && input.getValue() != null) {
                 LOG.info(input.getValue().toString());
-                return input.getKey() + ", " + input.getValue().getValue(INFERENCE);
+                Integer cluster = input.getValue().getValue(INFERENCE);
+                RunInferenceResult result = new RunInferenceResult(input.getKey(), cluster);
+                return GSON.toJson(result);
             }
             return "";
         }
     }
 
+    private static final class RunInferenceResult {
+
+        private String opportunityId;
+        private Integer anomalyCluster;
+
+        public RunInferenceResult(String opportunityId, Integer anomalyCluster) {
+            this.opportunityId = opportunityId;
+            this.anomalyCluster = anomalyCluster;
+        }
+    }
 }

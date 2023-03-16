@@ -35,7 +35,7 @@ public class FormatInputTransform {
     /**
      * Configures Cdap Salesforce Streaming Read transform.
      *
-     * @param pluginConfigParams Cdap Hubspot plugin config parameters
+     * @param pluginConfigParams Cdap Salesforce plugin config parameters
      * @param pullFrequencySec Delay in seconds between polling for new records updates
      * @param startOffset Inclusive start offset from which the reading should be started
      * @return configured Read transform

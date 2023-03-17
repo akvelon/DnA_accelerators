@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <!--
+    Copyright 2023 Akvelon Inc.
+
     Licensed under the Apache License, Version 2.0 (the "License"); you may not
     use this file except in compliance with the License. You may obtain a copy of
     the License at
@@ -30,11 +32,4 @@
     <suppress checks=".*" files=".+[\\\/]generated-src[\\\/].+\.java" />
     <suppress checks=".*" files=".+[\\\/]generated-sources[\\\/].+\.java" />
     <suppress checks=".*" files=".+[\\\/]generated-test-sources[\\\/].+\.java" />
-
-    <!-- suppress third party DataStream client which is temporarily added-->
-    <suppress checks=".*" files="common/src/main/java/com/google/api/.*.java" />
-    <suppress checks=".*" files="datastream-to-bigquery/src/main/java/temp/.*.java" />
-
-    <!-- suppress checks for Dataplex client which is auto-generated -->
-    <suppress checks=".*" files="googlecloud-to-googlecloud/src/main/java/com/google/api/services/dataplex/.*\.java" />
 </suppressions>

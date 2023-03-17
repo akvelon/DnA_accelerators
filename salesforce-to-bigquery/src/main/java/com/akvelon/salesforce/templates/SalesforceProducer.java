@@ -1,3 +1,22 @@
+/*
+ * Copyright 2023 Akvelon Inc.
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.akvelon.salesforce.templates;
 
 import com.google.gson.Gson;
@@ -26,9 +45,6 @@ public class SalesforceProducer {
 
     private static final Logger LOG = LoggerFactory.getLogger(SalesforceProducer.class);
 
-    private static final String DEFAULT_JSON_FILE = "/home/vitaly/Documents/trail/salesforce-opportunity-";
-    private static final String DEFAULT_URL = "https://akvekoninc-dev-ed.my.salesforce.com";
-    private static final String DEFAULT_TOKEN = "00D7Q00000BTuPu!AQoAQJE2zeXixkryhtAs2HXHbNuPjuV3Js0AJ1_InK_LHczF4PC_qS8SJmLjuYTuWmB_9OmRbFrBSfKiTXcQB10BkZlmgBnY";
     private static final Gson GSON = new Gson();
     private static final List<String> RESTRICTED_COLUMNS = Lists.newArrayList(
             "LastModifiedDate", "HasOpportunityLineItem", "FiscalYear",
@@ -37,6 +53,9 @@ public class SalesforceProducer {
             "SystemModstamp", "CreatedDate", "LastActivityDate", "HasOverdueTask",
             "LastStageChangeDate", "LastReferencedDate", "LastViewedDate"
     );
+    public static final int DEFAULT_TIMEOUT = 10;
+    public static final int DEFAULT_NUM_OF_RECORDS = 5;
+    public static final String SALESFORCE_SOBJECTS_URI = "/services/data/v57.0/sobjects/";
 
     public static void main(String[] args) {
 
@@ -49,11 +68,9 @@ public class SalesforceProducer {
             objectType = args[3];
             amount = Integer.parseInt(args[4]);
         } else {
-            jsonFile = DEFAULT_JSON_FILE;
-            url = DEFAULT_URL;
-            token = DEFAULT_TOKEN;
-            amount = 4;
-            objectType = "Opportunity";
+            throw new IllegalArgumentException("Please provide args: " +
+                    "[jsonFilePathPrefix, Salesforce base URL, Salesforce Access Token, " +
+                    "Salesforce ObjectType, Amount of files]");
         }
 
         int recordsWritten = 0;
@@ -84,7 +101,7 @@ public class SalesforceProducer {
 
                     LOG.info(jsonRecord);
 
-                    HttpURLConnection con = (HttpURLConnection) new URL(url + "/services/data/v57.0/sobjects/" + objectType).openConnection();
+                    HttpURLConnection con = (HttpURLConnection) new URL(url + SALESFORCE_SOBJECTS_URI + objectType).openConnection();
                     con.setRequestMethod("POST");
                     con.setDoOutput(true);
                     con.setRequestProperty("Authorization", "Bearer " + token);
@@ -97,9 +114,8 @@ public class SalesforceProducer {
                     con.disconnect();
 
                     recordsWritten++;
-                    if (recordsWritten % 5 == 0) {
-                        TimeUnit.SECONDS.sleep(10);
-//                        break;
+                    if (recordsWritten % DEFAULT_NUM_OF_RECORDS == 0) {
+                        TimeUnit.SECONDS.sleep(DEFAULT_TIMEOUT);
                     }
                 }
             } catch (Exception e) {

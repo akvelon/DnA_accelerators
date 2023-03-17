@@ -1,4 +1,6 @@
 /*
+ * Copyright 2023 Akvelon Inc.
+ *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,9 +28,15 @@ import com.akvelon.salesforce.utils.FailsafeElement;
 import com.akvelon.salesforce.utils.FailsafeElementCoder;
 import com.akvelon.salesforce.utils.PluginConfigOptionsConverter;
 import com.google.api.services.bigquery.model.TableRow;
+import com.google.auto.value.AutoValue;
 import com.google.gson.Gson;
 import io.cdap.plugin.salesforce.SalesforceConstants;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.coders.Coder;
 import org.apache.beam.sdk.coders.CoderRegistry;
@@ -38,12 +46,17 @@ import org.apache.beam.sdk.coders.RowCoder;
 import org.apache.beam.sdk.coders.StringUtf8Coder;
 import org.apache.beam.sdk.extensions.python.PythonExternalTransform;
 import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO;
+import org.apache.beam.sdk.io.gcp.bigquery.BigQueryInsertError;
 import org.apache.beam.sdk.io.gcp.bigquery.InsertRetryPolicy;
+import org.apache.beam.sdk.io.gcp.bigquery.TableRowJsonCoder;
 import org.apache.beam.sdk.io.gcp.bigquery.WriteResult;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.schemas.Schema;
+import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.Flatten;
 import org.apache.beam.sdk.transforms.MapElements;
+import org.apache.beam.sdk.transforms.PTransform;
+import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.transforms.SimpleFunction;
 import org.apache.beam.sdk.transforms.windowing.AfterProcessingTime;
 import org.apache.beam.sdk.transforms.windowing.GlobalWindows;
@@ -55,7 +68,9 @@ import org.apache.beam.sdk.values.PCollectionList;
 import org.apache.beam.sdk.values.PCollectionTuple;
 import org.apache.beam.sdk.values.Row;
 import org.apache.beam.sdk.values.TupleTag;
+import org.apache.beam.sdk.values.TupleTagList;
 import org.apache.beam.sdk.values.TypeDescriptor;
+import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.base.Throwables;
 import org.apache.commons.lang3.ObjectUtils;
 import org.joda.time.Duration;
 import org.slf4j.Logger;
@@ -277,19 +292,23 @@ public class CdapRunInference {
                         MapElements.into(new TypeDescriptor<Row>() {})
                                 .via(
                                         json -> {
-                                            String id, accountType = "no", billingCountry = "no", forecastCategory, industry = "no", opportunitySource = "no",
-                                            opportunityType, ownerRole = "no", productFamily = "no", segment = "no", stage;
-                                            boolean isClosed, isWon;
-                                            long amount;
-                                            Map<Object, Object> eventMap = GSON.fromJson(json, Map.class);
-                                            Map<Object, Object> map = (Map<Object, Object>) eventMap.get(SALESFORCE_SOBJECT);
-                                            id = (String) map.get(SALESFORCE_SOBJECT_ID);
-                                            opportunityType = (String) map.get("Type");
-                                            stage = (String) map.get("StageName");
-                                            forecastCategory = (String) map.get("ForecastCategory");
-                                            amount = (long) Double.parseDouble((String) map.get("Amount"));
-                                            isWon = Boolean.parseBoolean((String) map.get("IsWon"));
-                                            isClosed = Boolean.parseBoolean((String) map.get("IsClosed"));
+                                            String id = "no", accountType = "no", billingCountry = "no", forecastCategory = "no", industry = "no", opportunitySource = "no",
+                                            opportunityType = "no", ownerRole = "no", productFamily = "no", segment = "no", stage = "no";
+                                            boolean isClosed = false, isWon = false;
+                                            long amount = 0;
+                                            try {
+                                                Map<Object, Object> eventMap = GSON.fromJson(json, Map.class);
+                                                Map<Object, Object> map = (Map<Object, Object>) eventMap.get(SALESFORCE_SOBJECT);
+                                                id = (String) Optional.ofNullable(map.get(SALESFORCE_SOBJECT_ID)).orElse("");
+                                                opportunityType = (String) Optional.ofNullable(map.get("Type")).orElse("");
+                                                stage = (String) Optional.ofNullable(map.get("StageName")).orElse("");
+                                                forecastCategory = (String) Optional.ofNullable(map.get("ForecastCategory")).orElse("");
+                                                amount = Double.valueOf((double) Optional.ofNullable(map.get("Amount")).orElse(0.0d)).longValue();
+                                                isWon = (boolean) Optional.ofNullable(map.get("IsWon")).orElse(false);
+                                                isClosed = (boolean) Optional.ofNullable(map.get("IsClosed")).orElse(false);
+                                            } catch (Exception e) {
+                                                LOG.error("Can't parse fields from json", e);
+                                            }
                                             return Row.withSchema(rowSchema)
                                                     .attachValues(id, accountType, amount, billingCountry, isClosed, forecastCategory,
                                                             industry, opportunitySource, opportunityType, ownerRole, productFamily,
@@ -318,7 +337,7 @@ public class CdapRunInference {
         /*
          * Step #4: Transform the RunInference result into TableRows
          */
-        PCollectionTuple tableRows = outputLines.apply("ConvertMessageToTableRow", new CdapSalesforceStreamingToBigQuery.JsonToTableRow());
+        PCollectionTuple tableRows = outputLines.apply("ConvertMessageToTableRow", new JsonToTableRow());
 
         /*
          * Step #5: Write the successful records out to BigQuery
@@ -346,7 +365,7 @@ public class CdapRunInference {
                         .apply(
                                 "WrapInsertionErrors",
                                 MapElements.into(FAILSAFE_ELEMENT_CODER.getEncodedTypeDescriptor())
-                                        .via(CdapSalesforceStreamingToBigQuery::wrapBigQueryInsertError))
+                                        .via(CdapRunInference::wrapBigQueryInsertError))
                         .setCoder(FAILSAFE_ELEMENT_CODER);
 
         /*
@@ -380,6 +399,137 @@ public class CdapRunInference {
         pipeline.run();
     }
 
+    static class JsonToTableRow
+            extends PTransform<PCollection<String>, PCollectionTuple> {
+
+        @Override
+        public PCollectionTuple expand(PCollection<String> input) {
+
+            return input
+                    // Map the incoming messages into FailsafeElements so we can recover from failures
+                    // across multiple transforms.
+                    .apply("MapToRecord", ParDo.of(new MessageToFailsafeElementFn()))
+                    .apply(
+                            "JsonToTableRow",
+                            JsonToTableRow.FailsafeJsonToTableRow.<String>newBuilder()
+                                    .setSuccessTag(TRANSFORM_OUT)
+                                    .setFailureTag(TRANSFORM_DEADLETTER_OUT)
+                                    .build());
+        }
+
+        @AutoValue
+        public abstract static class FailsafeJsonToTableRow<T>
+                extends PTransform<PCollection<FailsafeElement<T, String>>, PCollectionTuple> {
+
+            public static <T> JsonToTableRow.FailsafeJsonToTableRow.Builder<T> newBuilder() {
+                return new AutoValue_CdapRunInference_JsonToTableRow_FailsafeJsonToTableRow.Builder<>();
+            }
+
+            public abstract TupleTag<TableRow> successTag();
+
+            public abstract TupleTag<FailsafeElement<T, String>> failureTag();
+
+            @Override
+            public PCollectionTuple expand(PCollection<FailsafeElement<T, String>> failsafeElements) {
+                return failsafeElements.apply(
+                        "JsonToTableRow",
+                        ParDo.of(
+                                        new DoFn<FailsafeElement<T, String>, TableRow>() {
+                                            @ProcessElement
+                                            public void processElement(ProcessContext context) {
+                                                FailsafeElement<T, String> element = context.element();
+                                                String json = element.getPayload();
+
+                                                try {
+                                                    TableRow row = convertJsonToTableRow(json);
+                                                    context.output(row);
+                                                } catch (Exception e) {
+                                                    context.output(
+                                                            failureTag(),
+                                                            FailsafeElement.of(element)
+                                                                    .setErrorMessage(e.getMessage())
+                                                                    .setStacktrace(Throwables.getStackTraceAsString(e)));
+                                                }
+                                            }
+                                        })
+                                .withOutputTags(successTag(), TupleTagList.of(failureTag())));
+            }
+
+            /**
+             * Builder for {@link JsonToTableRow.FailsafeJsonToTableRow}.
+             */
+            @AutoValue.Builder
+            public abstract static class Builder<T> {
+
+                public abstract JsonToTableRow.FailsafeJsonToTableRow.Builder<T> setSuccessTag(TupleTag<TableRow> successTag);
+
+                public abstract JsonToTableRow.FailsafeJsonToTableRow.Builder<T> setFailureTag(TupleTag<FailsafeElement<T, String>> failureTag);
+
+                public abstract JsonToTableRow.FailsafeJsonToTableRow<T> build();
+            }
+        }
+    }
+
+    /**
+     * Converts a JSON string to a {@link TableRow} object. If the data fails to convert, a {@link
+     * RuntimeException} will be thrown.
+     *
+     * @param json The JSON string to parse.
+     * @return The parsed {@link TableRow} object.
+     */
+    public static TableRow convertJsonToTableRow(String json) {
+        TableRow row;
+        // Parse the JSON into a {@link TableRow} object.
+        try (InputStream inputStream =
+                     new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))) {
+            row = TableRowJsonCoder.of().decode(inputStream, Coder.Context.OUTER);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to serialize json to table row: " + json, e);
+        }
+
+        return row;
+    }
+
+    /**
+     * Method to wrap a {@link BigQueryInsertError} into a {@link FailsafeElement}.
+     *
+     * @param insertError BigQueryInsert error.
+     * @return FailsafeElement object.
+     */
+    protected static FailsafeElement<String, String> wrapBigQueryInsertError(
+            BigQueryInsertError insertError) {
+
+        FailsafeElement<String, String> failsafeElement;
+        try {
+
+            failsafeElement =
+                    FailsafeElement.of(
+                            insertError.getRow().toPrettyString(), insertError.getRow().toPrettyString());
+            failsafeElement.setErrorMessage(insertError.getError().toPrettyString());
+
+        } catch (IOException e) {
+            LOG.error("Failed to wrap BigQuery insert error.");
+            throw new RuntimeException(e);
+        }
+        return failsafeElement;
+    }
+
+    /**
+     * The {@link MessageToFailsafeElementFn} wraps Json Message with the {@link FailsafeElement}
+     * class so errors can be recovered from and the original message can be output to a error records
+     * table.
+     */
+    static class MessageToFailsafeElementFn
+            extends DoFn<String, FailsafeElement<String, String>> {
+
+        @ProcessElement
+        public void processElement(ProcessContext context) {
+            String message = context.element();
+            context.output(FailsafeElement.of(message, message));
+        }
+    }
+
     /** Formats the output. */
     static class FormatOutput extends SimpleFunction<KV<String, Row>, String> {
 
@@ -390,7 +540,7 @@ public class CdapRunInference {
         public String apply(KV<String, Row> input) {
             if (input != null && input.getValue() != null) {
                 LOG.info(input.getValue().toString());
-                Integer cluster = input.getValue().getValue(INFERENCE);
+                Long cluster = input.getValue().getValue(INFERENCE);
                 RunInferenceResult result = new RunInferenceResult(input.getKey(), cluster);
                 return GSON.toJson(result);
             }
@@ -401,9 +551,9 @@ public class CdapRunInference {
     private static final class RunInferenceResult {
 
         private String opportunityId;
-        private Integer anomalyCluster;
+        private Long anomalyCluster;
 
-        public RunInferenceResult(String opportunityId, Integer anomalyCluster) {
+        public RunInferenceResult(String opportunityId, Long anomalyCluster) {
             this.opportunityId = opportunityId;
             this.anomalyCluster = anomalyCluster;
         }

@@ -22,18 +22,28 @@ package com.akvelon.salesforce.templates;
 import com.akvelon.salesforce.options.CdapSalesforceSourceOptions;
 import com.akvelon.salesforce.transforms.FormatInputTransform;
 import com.akvelon.salesforce.utils.PluginConfigOptionsConverter;
+import com.google.api.services.bigquery.model.TableRow;
 import com.google.gson.Gson;
 import io.cdap.cdap.api.data.schema.Schema;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.PipelineResult;
+import org.apache.beam.sdk.coders.Coder;
 import org.apache.beam.sdk.coders.KvCoder;
 import org.apache.beam.sdk.coders.SerializableCoder;
 import org.apache.beam.sdk.coders.StringUtf8Coder;
-import org.apache.beam.sdk.io.TextIO;
+import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO;
+import org.apache.beam.sdk.io.gcp.bigquery.InsertRetryPolicy;
+import org.apache.beam.sdk.io.gcp.bigquery.TableRowJsonCoder;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
+import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.MapValues;
+import org.apache.beam.sdk.transforms.SimpleFunction;
 import org.apache.beam.sdk.transforms.Values;
 import org.apache.beam.sdk.values.TypeDescriptors;
 import org.slf4j.Logger;
@@ -42,12 +52,12 @@ import org.slf4j.LoggerFactory;
 /**
  * Batch Salesforce Pipeline.
  */
-public class CdapSalesforceBatchToTxt {
+public class CdapSalesforceBatchToBigQuery {
 
     private static final Gson GSON = new Gson();
 
     /* Logger for class.*/
-    private static final Logger LOG = LoggerFactory.getLogger(CdapSalesforceBatchToTxt.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CdapSalesforceBatchToBigQuery.class);
 
     /**
      * Main entry point for pipeline execution.
@@ -79,7 +89,7 @@ public class CdapSalesforceBatchToTxt {
          * Steps:
          *  1) Read messages from Cdap Salesforce
          *  2) Extract values only
-         *  3) Write successful records to .txt file
+         *  3) Write successful records out to BigQuery
          */
 
         pipeline
@@ -90,8 +100,38 @@ public class CdapSalesforceBatchToTxt {
                 .apply(MapValues.into(TypeDescriptors.strings()).via(map -> GSON.toJson(map, Map.class)))
                 .setCoder(KvCoder.of(SerializableCoder.of(Schema.class), StringUtf8Coder.of()))
                 .apply(Values.create())
-                .apply("writeToTxt", TextIO.write().to(options.getOutputTxtFilePathPrefix()));
+                .apply("FormatOutput", MapElements.via(new FormatOutput()))
+                .apply(
+                        "WriteToBigQuery",
+                        BigQueryIO.writeTableRows()
+                                .withoutValidation()
+                                .withCreateDisposition(BigQueryIO.Write.CreateDisposition.CREATE_NEVER)
+                                .withWriteDisposition(BigQueryIO.Write.WriteDisposition.WRITE_APPEND)
+                                .withExtendedErrorInfo()
+                                .withMethod(BigQueryIO.Write.Method.STORAGE_WRITE_API)
+                                .withFailedInsertRetryPolicy(InsertRetryPolicy.retryTransientErrors())
+                                .to(options.getOutputTableSpec()));
 
         return pipeline.run();
+    }
+
+    /** Formats the output. */
+    static class FormatOutput extends SimpleFunction<String, TableRow> {
+
+        @Override
+        public TableRow apply(String input) {
+            if (input != null) {
+                TableRow row;
+                // Parse the JSON into a {@link TableRow} object.
+                try (InputStream inputStream =
+                             new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8))) {
+                    row = TableRowJsonCoder.of().decode(inputStream, Coder.Context.OUTER);
+                    return row;
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to serialize json to table row: " + input, e);
+                }
+            }
+            return null;
+        }
     }
 }

@@ -39,12 +39,10 @@ public interface CdapSalesforceSourceOptions extends DataflowPipelineOptions {
     void setSObjectName(String sObjectName);
 
     @Validation.Required
-    @Description(
-            "Path to output folder with filename prefix."
-                    + "It will write a set of .txt files with names like {prefix}-###.")
-    String getOutputTxtFilePathPrefix();
+    @Description("Big Query table spec to write the output to / path to output txt file")
+    String getOutputTableSpec();
 
-    void setOutputTxtFilePathPrefix(String outputTxtFilePathPrefix);
+    void setOutputTableSpec(String outputTableSpec);
 
     @Validation.Required
     @Description(SalesforceConstants.PROPERTY_USERNAME)

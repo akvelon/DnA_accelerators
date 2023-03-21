@@ -19,6 +19,26 @@
  */
 package com.akvelon.salesforce.templates;
 
+import static com.akvelon.salesforce.utils.BigQueryConstants.DEADLETTER_SCHEMA;
+import static com.akvelon.salesforce.utils.BigQueryConstants.DEFAULT_DEADLETTER_TABLE_SUFFIX;
+import static com.akvelon.salesforce.utils.SalesforceConstants.ACCOUNT_TYPE;
+import static com.akvelon.salesforce.utils.SalesforceConstants.AMOUNT;
+import static com.akvelon.salesforce.utils.SalesforceConstants.BILLING_COUNTRY;
+import static com.akvelon.salesforce.utils.SalesforceConstants.DEFAULT_VALUE;
+import static com.akvelon.salesforce.utils.SalesforceConstants.FORECAST_CATEGORY;
+import static com.akvelon.salesforce.utils.SalesforceConstants.INDUSTRY;
+import static com.akvelon.salesforce.utils.SalesforceConstants.IS_CLOSED;
+import static com.akvelon.salesforce.utils.SalesforceConstants.IS_WON;
+import static com.akvelon.salesforce.utils.SalesforceConstants.OPPORTUNITY_SOURCE;
+import static com.akvelon.salesforce.utils.SalesforceConstants.OPPORTUNITY_TYPE;
+import static com.akvelon.salesforce.utils.SalesforceConstants.OWNER_ROLE;
+import static com.akvelon.salesforce.utils.SalesforceConstants.PRODUCT_FAMILY;
+import static com.akvelon.salesforce.utils.SalesforceConstants.SEGMENT;
+import static com.akvelon.salesforce.utils.SalesforceConstants.SOBJECT;
+import static com.akvelon.salesforce.utils.SalesforceConstants.SOBJECT_ID;
+import static com.akvelon.salesforce.utils.SalesforceConstants.STAGE;
+import static com.akvelon.salesforce.utils.SalesforceConstants.STAGE_NAME;
+import static com.akvelon.salesforce.utils.SalesforceConstants.TYPE;
 import static com.akvelon.salesforce.utils.VaultUtils.getSalesforceCredentialsFromVault;
 
 import com.akvelon.salesforce.options.CdapSalesforceStreamingSourceOptions;
@@ -57,6 +77,7 @@ import org.apache.beam.sdk.transforms.Flatten;
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.transforms.ParDo;
+import org.apache.beam.sdk.transforms.SerializableFunction;
 import org.apache.beam.sdk.transforms.SimpleFunction;
 import org.apache.beam.sdk.transforms.windowing.AfterProcessingTime;
 import org.apache.beam.sdk.transforms.windowing.GlobalWindows;
@@ -109,8 +130,6 @@ public class CdapRunInference {
     /* Logger for class.*/
     private static final Logger LOG = LoggerFactory.getLogger(CdapRunInference.class);
     private static final Gson GSON = new Gson();
-    private static final String SALESFORCE_SOBJECT = "sobject";
-    private static final String SALESFORCE_SOBJECT_ID = "Id";
 
     /**
      * The tag for the main output of the json transformation.
@@ -132,58 +151,6 @@ public class CdapRunInference {
             FailsafeElementCoder.of(
                     NullableCoder.of(StringUtf8Coder.of()), NullableCoder.of(StringUtf8Coder.of()));
 
-    public static final String DEADLETTER_SCHEMA =
-            "{\n"
-                    + "  \"fields\": [\n"
-                    + "    {\n"
-                    + "      \"name\": \"timestamp\",\n"
-                    + "      \"type\": \"TIMESTAMP\",\n"
-                    + "      \"mode\": \"REQUIRED\"\n"
-                    + "    },\n"
-                    + "    {\n"
-                    + "      \"name\": \"payloadString\",\n"
-                    + "      \"type\": \"STRING\",\n"
-                    + "      \"mode\": \"REQUIRED\"\n"
-                    + "    },\n"
-                    + "    {\n"
-                    + "      \"name\": \"payloadBytes\",\n"
-                    + "      \"type\": \"BYTES\",\n"
-                    + "      \"mode\": \"REQUIRED\"\n"
-                    + "    },\n"
-                    + "    {\n"
-                    + "      \"name\": \"attributes\",\n"
-                    + "      \"type\": \"RECORD\",\n"
-                    + "      \"mode\": \"REPEATED\",\n"
-                    + "      \"fields\": [\n"
-                    + "        {\n"
-                    + "          \"name\": \"key\",\n"
-                    + "          \"type\": \"STRING\",\n"
-                    + "          \"mode\": \"NULLABLE\"\n"
-                    + "        },\n"
-                    + "        {\n"
-                    + "          \"name\": \"value\",\n"
-                    + "          \"type\": \"STRING\",\n"
-                    + "          \"mode\": \"NULLABLE\"\n"
-                    + "        }\n"
-                    + "      ]\n"
-                    + "    },\n"
-                    + "    {\n"
-                    + "      \"name\": \"errorMessage\",\n"
-                    + "      \"type\": \"STRING\",\n"
-                    + "      \"mode\": \"NULLABLE\"\n"
-                    + "    },\n"
-                    + "    {\n"
-                    + "      \"name\": \"stacktrace\",\n"
-                    + "      \"type\": \"STRING\",\n"
-                    + "      \"mode\": \"NULLABLE\"\n"
-                    + "    }\n"
-                    + "  ]\n"
-                    + "}";
-
-    /**
-     * The default suffix for error tables if dead letter table is not specified.
-     */
-    private static final String DEFAULT_DEADLETTER_TABLE_SUFFIX = "_error_records";
     public static final String DEFAULT_PYTHON_SDK_OVERRIDES = "apache/beam_python3.9_sdk:2.45.0," +
             "gcr.io/dataflow-template-demo-374507/anomaly-detection-expansion-service:latest";
     public static final String ANOMALY_DETECTION_TRANFORM = "anomaly_detection.AnomalyDetection";
@@ -269,49 +236,11 @@ public class CdapRunInference {
         /*
          * Step #2: Transform messages from Cdap Salesforce to Rows
          */
-        Schema rowSchema =  Schema.of(
-                Schema.Field.of("Id", Schema.FieldType.STRING),
-                Schema.Field.of("AccountType", Schema.FieldType.STRING),
-                Schema.Field.of("Amount", Schema.FieldType.INT64),
-                Schema.Field.of("BillingCountry", Schema.FieldType.STRING),
-                Schema.Field.of("IsClosed", Schema.FieldType.BOOLEAN),
-                Schema.Field.of("ForecastCategory", Schema.FieldType.STRING),
-                Schema.Field.of("Industry", Schema.FieldType.STRING),
-                Schema.Field.of("OpportunitySource", Schema.FieldType.STRING),
-                Schema.Field.of("OpportunityType", Schema.FieldType.STRING),
-                Schema.Field.of("OwnerRole", Schema.FieldType.STRING),
-                Schema.Field.of("ProductFamily", Schema.FieldType.STRING),
-                Schema.Field.of("Segment", Schema.FieldType.STRING),
-                Schema.Field.of("Stage", Schema.FieldType.STRING),
-                Schema.Field.of("IsWon", Schema.FieldType.BOOLEAN));
+        Schema rowSchema = getSchemaForOpportunity();
         PCollection<Row> input = jsonMessages
                 .apply(
                         MapElements.into(new TypeDescriptor<Row>() {})
-                                .via(
-                                        json -> {
-                                            String id = "no", accountType = "no", billingCountry = "no", forecastCategory = "no", industry = "no", opportunitySource = "no",
-                                            opportunityType = "no", ownerRole = "no", productFamily = "no", segment = "no", stage = "no";
-                                            boolean isClosed = false, isWon = false;
-                                            long amount = 0;
-                                            try {
-                                                Map<Object, Object> eventMap = GSON.fromJson(json, Map.class);
-                                                Map<Object, Object> map = (Map<Object, Object>) eventMap.get(SALESFORCE_SOBJECT);
-                                                id = (String) Optional.ofNullable(map.get(SALESFORCE_SOBJECT_ID)).orElse("");
-                                                opportunityType = (String) Optional.ofNullable(map.get("Type")).orElse("");
-                                                stage = (String) Optional.ofNullable(map.get("StageName")).orElse("");
-                                                forecastCategory = (String) Optional.ofNullable(map.get("ForecastCategory")).orElse("");
-                                                amount = Double.valueOf((double) Optional.ofNullable(map.get("Amount")).orElse(0.0d)).longValue();
-                                                isWon = (boolean) Optional.ofNullable(map.get("IsWon")).orElse(false);
-                                                isClosed = (boolean) Optional.ofNullable(map.get("IsClosed")).orElse(false);
-                                            } catch (Exception e) {
-                                                LOG.error("Can't parse fields from json", e);
-                                            }
-                                            return Row.withSchema(rowSchema)
-                                                    .attachValues(id, accountType, amount, billingCountry, isClosed, forecastCategory,
-                                                            industry, opportunitySource, opportunityType, ownerRole, productFamily,
-                                                            segment, stage, isWon);
-                                        }
-                                )
+                                .via(new OpportunityFromJsonFn(rowSchema))
                 ).setCoder(RowCoder.of(rowSchema));
 
         /*
@@ -545,6 +474,41 @@ public class CdapRunInference {
         }
     }
 
+    /** Parses JSON string to Salesforce Opportunity. */
+    static class OpportunityFromJsonFn implements SerializableFunction<String, Row> {
+
+        private final Schema rowSchema;
+
+        public OpportunityFromJsonFn(Schema rowSchema) {
+            this.rowSchema = rowSchema;
+        }
+
+        @Override
+        public Row apply(String json) {
+            String id = DEFAULT_VALUE, accountType = DEFAULT_VALUE, billingCountry = DEFAULT_VALUE, forecastCategory = DEFAULT_VALUE, industry = DEFAULT_VALUE, opportunitySource = DEFAULT_VALUE,
+                    opportunityType = DEFAULT_VALUE, ownerRole = DEFAULT_VALUE, productFamily = DEFAULT_VALUE, segment = DEFAULT_VALUE, stage = DEFAULT_VALUE;
+            boolean isClosed = false, isWon = false;
+            long amount = 0;
+            try {
+                Map<Object, Object> eventMap = GSON.fromJson(json, Map.class);
+                Map<Object, Object> map = (Map<Object, Object>) eventMap.get(SOBJECT);
+                id = (String) Optional.ofNullable(map.get(SOBJECT_ID)).orElse("");
+                opportunityType = (String) Optional.ofNullable(map.get(TYPE)).orElse("");
+                stage = (String) Optional.ofNullable(map.get(STAGE_NAME)).orElse("");
+                forecastCategory = (String) Optional.ofNullable(map.get(FORECAST_CATEGORY)).orElse("");
+                amount = Double.valueOf((double) Optional.ofNullable(map.get(AMOUNT)).orElse(0.0d)).longValue();
+                isWon = (boolean) Optional.ofNullable(map.get(IS_WON)).orElse(false);
+                isClosed = (boolean) Optional.ofNullable(map.get(IS_CLOSED)).orElse(false);
+            } catch (Exception e) {
+                LOG.error("Can't parse fields from json", e);
+            }
+            return Row.withSchema(rowSchema)
+                    .attachValues(id, accountType, amount, billingCountry, isClosed, forecastCategory,
+                            industry, opportunitySource, opportunityType, ownerRole, productFamily,
+                            segment, stage, isWon);
+        }
+    }
+
     /**
      * Simple object for result of Python RunInference transform.
      */
@@ -557,5 +521,23 @@ public class CdapRunInference {
             this.opportunityId = opportunityId;
             this.anomalyCluster = anomalyCluster;
         }
+    }
+
+    private static Schema getSchemaForOpportunity() {
+        return Schema.of(
+                Schema.Field.of(SOBJECT_ID, Schema.FieldType.STRING),
+                Schema.Field.of(ACCOUNT_TYPE, Schema.FieldType.STRING),
+                Schema.Field.of(AMOUNT, Schema.FieldType.INT64),
+                Schema.Field.of(BILLING_COUNTRY, Schema.FieldType.STRING),
+                Schema.Field.of(IS_CLOSED, Schema.FieldType.BOOLEAN),
+                Schema.Field.of(FORECAST_CATEGORY, Schema.FieldType.STRING),
+                Schema.Field.of(INDUSTRY, Schema.FieldType.STRING),
+                Schema.Field.of(OPPORTUNITY_SOURCE, Schema.FieldType.STRING),
+                Schema.Field.of(OPPORTUNITY_TYPE, Schema.FieldType.STRING),
+                Schema.Field.of(OWNER_ROLE, Schema.FieldType.STRING),
+                Schema.Field.of(PRODUCT_FAMILY, Schema.FieldType.STRING),
+                Schema.Field.of(SEGMENT, Schema.FieldType.STRING),
+                Schema.Field.of(STAGE, Schema.FieldType.STRING),
+                Schema.Field.of(IS_WON, Schema.FieldType.BOOLEAN));
     }
 }

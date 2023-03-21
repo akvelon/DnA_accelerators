@@ -97,7 +97,7 @@ gcloud dataflow flex-template build ${TEMPLATE_PATH} \
        --flex-template-base-image ${BASE_CONTAINER_IMAGE} \
        --metadata-file "src/main/resources/salesforce_to_biquery_metadata.json" \
        --jar "target/salesforce-to-bigquery-1.0-SNAPSHOT.jar" \
-       --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="com.akvelon.salesforce.templates.CdapSalesforceStreamingToBigQuery"
+       --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="com.akvelon.salesforce.templates.CdapRunInference"
 ```
 
 ### Executing Template
@@ -117,9 +117,11 @@ The template requires the following parameters:
 The template allows for the user to supply the following optional parameters:
 - `pullFrequencySec` - delay in seconds between polling for new records updates.
 - `startOffset` - inclusive start offset from which the reading should be started.
-- `secretStoreUrl`: URL to Salesforce credentials in HashiCorp Vault secret storage in the format
-  'http(s)://vaultip:vaultport/path/to/credentials'
-- `vaultToken`: Token to access HashiCorp Vault secret storage
+- `secretStoreUrl` - URL to Salesforce credentials in HashiCorp Vault secret storage in the format
+  'http(s)://vaultip:vaultport/path/to/credentials'.
+- `vaultToken` - Token to access HashiCorp Vault secret storage.
+- `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in <project-id>:<dataset>.<table> format.
+- `expansionService` - Python expansion service in format host:port, needed for RunInference transforms.
 
 You can provide the next secured parameters directly instead of providing HashiCorp Vault parameters:
 - `username` - Salesforce username.
@@ -147,6 +149,8 @@ You can do this in 3 different ways:
         --parameters vaultToken="your-token" \
         --parameters referenceName="your-reference-name" \
         --parameters outputTableSpec="your-table" \
+        --parameters outputDeadLetterTable="your-dead-letter-table" \
+        --parameters expansionService="your-expansion-service" \
         --region "${REGION}"
     ```
 3. With a REST API request
@@ -174,7 +178,9 @@ You can do this in 3 different ways:
                      "secretStoreUrl": "http(s)://host:port/path/to/credentials",
                      "vaultToken": "your-token",
                      "referenceName": "your-reference-name",
-                     "outputTableSpec": "your-table"
+                     "outputTableSpec": "your-table",
+                     "outputDeadLetterTable": "your-dead-letter-table",
+                     "expansionService": "your-expansion-service"
                  }
              }
          }

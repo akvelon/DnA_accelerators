@@ -96,15 +96,12 @@ import org.slf4j.LoggerFactory;
  * --pushTopicName=your-push-topic-name \
  * --referenceName=your-reference-name \
  * --outputTableSpec=your-big-query-table \
+ * --outputDeadLetterTable=your-big-query-dead-letter-table \
  * --pullFrequencySec=1 \
  * --secretStoreUrl=your-url \
  * --vaultToken=your-token \
- * --startOffset=0
- * }
- * <p>
- * By default this will run the pipeline locally with the DirectRunner. To change the runner, specify:
- * {@code
- * --runner=YOUR_SELECTED_RUNNER
+ * --startOffset=0 \
+ * --expansionService=your-python-expansion-service
  * }
  */
 public class CdapRunInference {
@@ -530,7 +527,7 @@ public class CdapRunInference {
         }
     }
 
-    /** Formats the output. */
+    /** Formats the output as JSON string. */
     static class FormatOutput extends SimpleFunction<KV<String, Row>, String> {
 
         public static final String INFERENCE = "inference";
@@ -548,6 +545,9 @@ public class CdapRunInference {
         }
     }
 
+    /**
+     * Simple object for result of Python RunInference transform.
+     */
     private static final class RunInferenceResult {
 
         private String opportunityId;

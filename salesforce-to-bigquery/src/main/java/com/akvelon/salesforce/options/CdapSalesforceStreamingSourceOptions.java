@@ -35,16 +35,11 @@ public interface CdapSalesforceStreamingSourceOptions extends DataflowPipelineOp
 
     //Python
 
-    @Description("Expansion Service")
+    @Description("Python expansion service in format host:port")
     @Default.String("34.66.122.159:8088")
     String getExpansionService();
 
     void setExpansionService(String expansionService);
-
-    @Description("Model URI")
-    String getModelUri();
-
-    void setModelUri(String modelUri);
 
     // Base
 
@@ -89,14 +84,22 @@ public interface CdapSalesforceStreamingSourceOptions extends DataflowPipelineOp
 
     void setLoginUrl(String loginUrl);
 
-    //Source
-
     @Validation.Required
     @Description(SalesforceSourceConstants.PROPERTY_SOBJECT_NAME)
     @Default.String("Account")
     String getSObjectName();
 
     void setSObjectName(String sObjectName);
+
+    @Description("URL to credentials in Vault")
+    String getSecretStoreUrl();
+
+    void setSecretStoreUrl(String secretStoreUrl);
+
+    @Description("Vault token")
+    String getVaultToken();
+
+    void setVaultToken(String vaultToken);
 
     // BigQuery
 
@@ -106,9 +109,7 @@ public interface CdapSalesforceStreamingSourceOptions extends DataflowPipelineOp
 
     void setOutputTableSpec(String outputTableSpec);
 
-    @Description(
-            "The dead-letter table to output to within BigQuery in <project-id>:<dataset>.<table> "
-                    + "format. If it doesn't exist, it will be created during pipeline execution.")
+    @Description("The dead-letter table to output to within BigQuery in <project-id>:<dataset>.<table> format.")
     String getOutputDeadletterTable();
 
     void setOutputDeadletterTable(String outputDeadletterTable);
@@ -130,14 +131,4 @@ public interface CdapSalesforceStreamingSourceOptions extends DataflowPipelineOp
     Long getStartOffset();
 
     void setStartOffset(Long startOffset);
-
-    @Description("URL to credentials in Vault")
-    String getSecretStoreUrl();
-
-    void setSecretStoreUrl(String secretStoreUrl);
-
-    @Description("Vault token")
-    String getVaultToken();
-
-    void setVaultToken(String vaultToken);
 }

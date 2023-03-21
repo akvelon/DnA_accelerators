@@ -1,5 +1,5 @@
 {
-  "name": "Salesforce to Txt",
+  "name": "Salesforce to BigQuery",
   "description": "Streaming pipeline. Ingests objects from Salesforce to a .txt file",
   "parameters": [
     {
@@ -118,16 +118,8 @@
     },
     {
       "name": "expansionService",
-      "label": "Host and port to expansion service, or leave empty for default",
+      "label": "Host and port of Python expansion service, or leave empty for default",
       "helpText": "localhost:8088",
-      "regexes": [],
-      "paramType": "TEXT",
-      "isOptional": true
-    },
-    {
-      "name": "modelUri",
-      "label": "Model URI",
-      "helpText": "URI to ML model",
       "regexes": [],
       "paramType": "TEXT",
       "isOptional": true

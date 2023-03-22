@@ -53,6 +53,11 @@ public class PluginConfigOptionsConverter {
                 .put(SalesforceConstants.PROPERTY_CONSUMER_SECRET, options.getConsumerSecret())
                 .put(SalesforceConstants.PROPERTY_LOGIN_URL, options.getLoginUrl())
                 .put(SalesforceSourceConstants.PROPERTY_SOBJECT_NAME, options.getSObjectName())
+                .put(SalesforceSourceConstants.PROPERTY_OFFSET, options.getOffset())
+                .put(SalesforceSourceConstants.PROPERTY_DURATION, options.getDuration())
+                .put(SalesforceSourceConstants.PROPERTY_QUERY, options.getQuery())
+                .put(SalesforceSourceConstants.PROPERTY_DATETIME_AFTER, options.getDatetimeAfter())
+                .put(SalesforceSourceConstants.PROPERTY_DATETIME_BEFORE, options.getDatetimeBefore())
                 .build();
     }
 

@@ -17,8 +17,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.akvelon.salesforce.templates;
+package com.akvelon.salesforce.examples;
 
+import com.akvelon.salesforce.utils.SalesforceConstants;
 import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -39,7 +40,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Salesforce producer.
+ * Salesforce producer that generates Opportunities using Salesforce REST API.
+ * Record fields came from given JSON files.
  */
 public class SalesforceProducer {
 
@@ -92,7 +94,8 @@ public class SalesforceProducer {
                             }.getType());
 
                     List<String> keysToRemove =
-                            map.keySet().stream().filter(key -> key.contains("Id") || key.contains("__c")
+                            map.keySet().stream().filter(key -> key.contains(SalesforceConstants.SOBJECT_ID)
+                                    || key.contains(SalesforceConstants.CUSTOM_PROPERTY_POSTFIX)
                                     || RESTRICTED_COLUMNS.contains(key)).collect(Collectors.toList());
                     for (String key : keysToRemove) {
                         map.remove(key);

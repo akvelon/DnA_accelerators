@@ -85,4 +85,31 @@ public interface CdapSalesforceSourceOptions extends DataflowPipelineOptions {
     String getReferenceName();
 
     void setReferenceName(String referenceName);
+
+    //Optional
+
+    @Description("Salesforce SObject query offset.")
+    String getOffset();
+
+    void setOffset(String offset);
+
+    @Description("Salesforce SObject query duration.")
+    String getDuration();
+
+    void setDuration();
+
+    @Description("Salesforce SObject query datetime filter. Example: 2019-03-12T11:29:52Z")
+    String getDatetimeBefore();
+
+    void setDatetimeBefore();
+
+    @Description("Salesforce SObject query datetime filter. Example: 2019-03-12T11:29:52Z")
+    String getDatetimeAfter();
+
+    void setDatetimeAfter();
+
+    @Description("The SOQL query to retrieve results from. Example: select Id, Name from Opportunity")
+    String getQuery();
+
+    void setQuery();
 }

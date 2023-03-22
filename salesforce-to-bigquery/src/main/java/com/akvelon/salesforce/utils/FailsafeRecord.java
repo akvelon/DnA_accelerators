@@ -25,33 +25,31 @@ import org.apache.avro.reflect.Nullable;
 import org.apache.beam.sdk.coders.DefaultCoder;
 
 /**
- * The {@link FailsafeElement} class holds the current value and original value of a record within a
- * pipeline. This class allows pipelines to not lose valuable information about an incoming record
- * throughout the processing of that record. The use of this class allows for more robust
- * dead-letter strategies as the original record information is not lost throughout the pipeline and
- * can be output to a dead-letter in the event of a failure during one of the pipelines transforms.
+ * The {@link FailsafeRecord} class holds the current and original values of a record within a
+ * pipeline and error message with stacktrace. This class allows to output the original record information
+ * and error information to a dead-letter table if there was failure during one of the pipelines transforms.
  */
-@DefaultCoder(FailsafeElementCoder.class)
-public class FailsafeElement<OriginalT, CurrentT> {
+@DefaultCoder(FailsafeRecordCoder.class)
+public class FailsafeRecord<OriginalT, CurrentT> {
 
     private final OriginalT originalPayload;
-    private final CurrentT payload;
+    private final CurrentT currentPayload;
     @Nullable private String errorMessage;
     @Nullable private String stacktrace;
 
-    private FailsafeElement(OriginalT originalPayload, CurrentT payload) {
+    private FailsafeRecord(OriginalT originalPayload, CurrentT currentPayload) {
         this.originalPayload = originalPayload;
-        this.payload = payload;
+        this.currentPayload = currentPayload;
     }
 
-    public static <OriginalT, CurrentT> FailsafeElement<OriginalT, CurrentT> of(
+    public static <OriginalT, CurrentT> FailsafeRecord<OriginalT, CurrentT> of(
             OriginalT originalPayload, CurrentT currentPayload) {
-        return new FailsafeElement<>(originalPayload, currentPayload);
+        return new FailsafeRecord<>(originalPayload, currentPayload);
     }
 
-    public static <OriginalT, CurrentT> FailsafeElement<OriginalT, CurrentT> of(
-            FailsafeElement<OriginalT, CurrentT> other) {
-        return new FailsafeElement<>(other.originalPayload, other.payload)
+    public static <OriginalT, CurrentT> FailsafeRecord<OriginalT, CurrentT> of(
+            FailsafeRecord<OriginalT, CurrentT> other) {
+        return new FailsafeRecord<>(other.originalPayload, other.currentPayload)
                 .setErrorMessage(other.getErrorMessage())
                 .setStacktrace(other.getStacktrace());
     }
@@ -60,15 +58,15 @@ public class FailsafeElement<OriginalT, CurrentT> {
         return originalPayload;
     }
 
-    public CurrentT getPayload() {
-        return payload;
+    public CurrentT getCurrentPayload() {
+        return currentPayload;
     }
 
     public String getErrorMessage() {
         return errorMessage;
     }
 
-    public FailsafeElement<OriginalT, CurrentT> setErrorMessage(String errorMessage) {
+    public FailsafeRecord<OriginalT, CurrentT> setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
         return this;
     }
@@ -77,7 +75,7 @@ public class FailsafeElement<OriginalT, CurrentT> {
         return stacktrace;
     }
 
-    public FailsafeElement<OriginalT, CurrentT> setStacktrace(String stacktrace) {
+    public FailsafeRecord<OriginalT, CurrentT> setStacktrace(String stacktrace) {
         this.stacktrace = stacktrace;
         return this;
     }
@@ -91,23 +89,23 @@ public class FailsafeElement<OriginalT, CurrentT> {
             return false;
         }
 
-        final FailsafeElement other = (FailsafeElement) obj;
+        final FailsafeRecord other = (FailsafeRecord) obj;
         return Objects.deepEquals(this.originalPayload, other.getOriginalPayload())
-                && Objects.deepEquals(this.payload, other.getPayload())
+                && Objects.deepEquals(this.currentPayload, other.getCurrentPayload())
                 && Objects.deepEquals(this.errorMessage, other.getErrorMessage())
                 && Objects.deepEquals(this.stacktrace, other.getStacktrace());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(originalPayload, payload, errorMessage, stacktrace);
+        return Objects.hash(originalPayload, currentPayload, errorMessage, stacktrace);
     }
 
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
                 .add("originalPayload", originalPayload)
-                .add("payload", payload)
+                .add("payload", currentPayload)
                 .add("errorMessage", errorMessage)
                 .add("stacktrace", stacktrace)
                 .toString();

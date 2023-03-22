@@ -24,10 +24,10 @@ import static com.akvelon.salesforce.utils.BigQueryConstants.DEFAULT_DEADLETTER_
 import static com.akvelon.salesforce.utils.VaultUtils.getSalesforceCredentialsFromVault;
 
 import com.akvelon.salesforce.options.CdapSalesforceStreamingSourceOptions;
+import com.akvelon.salesforce.transforms.BigQueryErrorTransform;
 import com.akvelon.salesforce.transforms.FormatInputTransform;
-import com.akvelon.salesforce.utils.ErrorConverters;
-import com.akvelon.salesforce.utils.FailsafeElement;
-import com.akvelon.salesforce.utils.FailsafeElementCoder;
+import com.akvelon.salesforce.utils.FailsafeRecord;
+import com.akvelon.salesforce.utils.FailsafeRecordCoder;
 import com.akvelon.salesforce.utils.PluginConfigOptionsConverter;
 import com.google.api.services.bigquery.model.TableRow;
 import com.google.auto.value.AutoValue;
@@ -118,15 +118,15 @@ public class CdapSalesforceStreamingToBigQuery {
     /**
      * The tag for the dead-letter output of the json to table row transform.
      */
-    static final TupleTag<FailsafeElement<String, String>> TRANSFORM_DEADLETTER_OUT =
-            new TupleTag<FailsafeElement<String, String>>() {
+    static final TupleTag<FailsafeRecord<String, String>> TRANSFORM_DEADLETTER_OUT =
+            new TupleTag<FailsafeRecord<String, String>>() {
             };
 
     /**
-     * String/String Coder for FailsafeElement.
+     * String/String Coder for {@link FailsafeRecord}.
      */
-    private static final FailsafeElementCoder<String, String> FAILSAFE_ELEMENT_CODER =
-            FailsafeElementCoder.of(
+    private static final FailsafeRecordCoder<String, String> FAILSAFE_RECORD_CODER =
+            FailsafeRecordCoder.of(
                     NullableCoder.of(StringUtf8Coder.of()), NullableCoder.of(StringUtf8Coder.of()));
 
     /**
@@ -144,8 +144,8 @@ public class CdapSalesforceStreamingToBigQuery {
         Pipeline pipeline = Pipeline.create(options);
 
         // Register the coder for pipeline
-        FailsafeElementCoder<String, String> coder =
-                FailsafeElementCoder.of(NullableCoder.of(StringUtf8Coder.of()),
+        FailsafeRecordCoder<String, String> coder =
+                FailsafeRecordCoder.of(NullableCoder.of(StringUtf8Coder.of()),
                         NullableCoder.of(StringUtf8Coder.of()));
 
         CoderRegistry coderRegistry = pipeline.getCoderRegistry();
@@ -228,16 +228,16 @@ public class CdapSalesforceStreamingToBigQuery {
 
         /*
          * Step 3 Contd.
-         * Elements that failed inserts into BigQuery are extracted and converted to FailsafeElement
+         * Elements that failed inserts into BigQuery are extracted and converted to FailsafeRecord
          */
-        PCollection<FailsafeElement<String, String>> failedInserts =
+        PCollection<FailsafeRecord<String, String>> failedInserts =
                 writeResult
                         .getFailedInsertsWithErr()
                         .apply(
                                 "WrapInsertionErrors",
-                                MapElements.into(FAILSAFE_ELEMENT_CODER.getEncodedTypeDescriptor())
+                                MapElements.into(FAILSAFE_RECORD_CODER.getEncodedTypeDescriptor())
                                         .via(CdapSalesforceStreamingToBigQuery::wrapBigQueryInsertError))
-                        .setCoder(FAILSAFE_ELEMENT_CODER);
+                        .setCoder(FAILSAFE_RECORD_CODER);
 
         /*
          * Step #4: Write failed records out to BigQuery
@@ -246,7 +246,7 @@ public class CdapSalesforceStreamingToBigQuery {
                 .apply("Flatten", Flatten.pCollections())
                 .apply(
                         "WriteTransformationFailedRecords",
-                        ErrorConverters.WriteSalesforceMessageErrors.newBuilder()
+                        BigQueryErrorTransform.WriteStringMessageErrors.newBuilder()
                                 .setErrorRecordsTable(
                                         ObjectUtils.firstNonNull(
                                                 options.getOutputDeadletterTable(),
@@ -259,7 +259,7 @@ public class CdapSalesforceStreamingToBigQuery {
          */
         failedInserts.apply(
                 "WriteInsertionFailedRecords",
-                ErrorConverters.WriteStringMessageErrors.newBuilder()
+                BigQueryErrorTransform.WriteStringMessageErrors.newBuilder()
                         .setErrorRecordsTable(
                                 ObjectUtils.firstNonNull(
                                         options.getOutputDeadletterTable(),
@@ -271,27 +271,27 @@ public class CdapSalesforceStreamingToBigQuery {
     }
 
     /**
-     * Method to wrap a {@link BigQueryInsertError} into a {@link FailsafeElement}.
+     * Method to wrap a {@link BigQueryInsertError} into a {@link FailsafeRecord}.
      *
      * @param insertError BigQueryInsert error.
-     * @return FailsafeElement object.
+     * @return {@link FailsafeRecord} object.
      */
-    protected static FailsafeElement<String, String> wrapBigQueryInsertError(
+    protected static FailsafeRecord<String, String> wrapBigQueryInsertError(
             BigQueryInsertError insertError) {
 
-        FailsafeElement<String, String> failsafeElement;
+        FailsafeRecord<String, String> failsafeRecord;
         try {
 
-            failsafeElement =
-                    FailsafeElement.of(
+            failsafeRecord =
+                    FailsafeRecord.of(
                             insertError.getRow().toPrettyString(), insertError.getRow().toPrettyString());
-            failsafeElement.setErrorMessage(insertError.getError().toPrettyString());
+            failsafeRecord.setErrorMessage(insertError.getError().toPrettyString());
 
         } catch (IOException e) {
             LOG.error("Failed to wrap BigQuery insert error.");
             throw new RuntimeException(e);
         }
-        return failsafeElement;
+        return failsafeRecord;
     }
 
     /**
@@ -322,9 +322,9 @@ public class CdapSalesforceStreamingToBigQuery {
         public PCollectionTuple expand(PCollection<String> input) {
 
             return input
-                // Map the incoming messages into FailsafeElements so we can recover from failures
+                // Map the incoming messages into FailsafeRecords so we can recover from failures
                 // across multiple transforms.
-                .apply("MapToRecord", ParDo.of(new MessageToFailsafeElementFn()))
+                .apply("MapToRecord", ParDo.of(new MessageToFailsafeRecordFn()))
                 .apply(
                         "JsonToTableRow",
                         FailsafeJsonToTableRow.<String>newBuilder()
@@ -335,7 +335,7 @@ public class CdapSalesforceStreamingToBigQuery {
 
         @AutoValue
         public abstract static class FailsafeJsonToTableRow<T>
-                extends PTransform<PCollection<FailsafeElement<T, String>>, PCollectionTuple> {
+                extends PTransform<PCollection<FailsafeRecord<T, String>>, PCollectionTuple> {
 
             public static <T> Builder<T> newBuilder() {
                 return new AutoValue_CdapSalesforceStreamingToBigQuery_JsonToTableRow_FailsafeJsonToTableRow.Builder<>();
@@ -343,18 +343,18 @@ public class CdapSalesforceStreamingToBigQuery {
 
             public abstract TupleTag<TableRow> successTag();
 
-            public abstract TupleTag<FailsafeElement<T, String>> failureTag();
+            public abstract TupleTag<FailsafeRecord<T, String>> failureTag();
 
             @Override
-            public PCollectionTuple expand(PCollection<FailsafeElement<T, String>> failsafeElements) {
-                return failsafeElements.apply(
+            public PCollectionTuple expand(PCollection<FailsafeRecord<T, String>> failsafeRecords) {
+                return failsafeRecords.apply(
                         "JsonToTableRow",
                         ParDo.of(
-                            new DoFn<FailsafeElement<T, String>, TableRow>() {
+                            new DoFn<FailsafeRecord<T, String>, TableRow>() {
                                 @ProcessElement
                                 public void processElement(ProcessContext context) {
-                                    FailsafeElement<T, String> element = context.element();
-                                    String json = element.getPayload();
+                                    FailsafeRecord<T, String> element = context.element();
+                                    String json = element.getCurrentPayload();
 
                                     try {
                                         TableRow row = convertJsonToTableRow(json);
@@ -362,7 +362,7 @@ public class CdapSalesforceStreamingToBigQuery {
                                     } catch (Exception e) {
                                         context.output(
                                                 failureTag(),
-                                                FailsafeElement.of(element)
+                                                FailsafeRecord.of(element)
                                                         .setErrorMessage(e.getMessage())
                                                         .setStacktrace(Throwables.getStackTraceAsString(e)));
                                     }
@@ -379,7 +379,7 @@ public class CdapSalesforceStreamingToBigQuery {
 
                 public abstract Builder<T> setSuccessTag(TupleTag<TableRow> successTag);
 
-                public abstract Builder<T> setFailureTag(TupleTag<FailsafeElement<T, String>> failureTag);
+                public abstract Builder<T> setFailureTag(TupleTag<FailsafeRecord<T, String>> failureTag);
 
                 public abstract FailsafeJsonToTableRow<T> build();
             }
@@ -387,17 +387,17 @@ public class CdapSalesforceStreamingToBigQuery {
     }
 
     /**
-     * The {@link MessageToFailsafeElementFn} wraps Json Message with the {@link FailsafeElement}
-     * class so errors can be recovered from and the original message can be output to a error records
+     * The {@link MessageToFailsafeRecordFn} wraps Json Message with the {@link FailsafeRecord}
+     * class so errors can be recovered from and the original message can be output to the error records
      * table.
      */
-    static class MessageToFailsafeElementFn
-            extends DoFn<String, FailsafeElement<String, String>> {
+    static class MessageToFailsafeRecordFn
+            extends DoFn<String, FailsafeRecord<String, String>> {
 
         @ProcessElement
         public void processElement(ProcessContext context) {
             String message = context.element();
-            context.output(FailsafeElement.of(message, message));
+            context.output(FailsafeRecord.of(message, message));
         }
     }
 

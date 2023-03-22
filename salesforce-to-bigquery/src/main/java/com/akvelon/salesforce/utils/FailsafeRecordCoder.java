@@ -33,23 +33,20 @@ import org.apache.beam.sdk.values.TypeDescriptor;
 import org.apache.beam.sdk.values.TypeParameter;
 
 /**
- * The {@link FailsafeElementCoder} encodes and decodes {@link FailsafeElement} objects.
- *
- * <p>This coder is necessary until Avro supports parameterized types (<a
- * href="https://issues.apache.org/jira/browse/AVRO-1571">AVRO-1571</a>) without requiring to
- * explicitly specifying the schema for the type.
+ * The {@link FailsafeRecordCoder} encodes and decodes {@link FailsafeRecord} objects.
  *
  * @param <OriginalT> The type of the original payload to be encoded.
  * @param <CurrentT> The type of the current payload to be encoded.
  */
-public class FailsafeElementCoder<OriginalT, CurrentT>
-        extends CustomCoder<FailsafeElement<OriginalT, CurrentT>> {
+public class FailsafeRecordCoder<OriginalT, CurrentT>
+        extends CustomCoder<FailsafeRecord<OriginalT, CurrentT>> {
 
     private static final NullableCoder<String> STRING_CODER = NullableCoder.of(StringUtf8Coder.of());
+
     private final Coder<OriginalT> originalPayloadCoder;
     private final Coder<CurrentT> currentPayloadCoder;
 
-    private FailsafeElementCoder(
+    private FailsafeRecordCoder(
             Coder<OriginalT> originalPayloadCoder, Coder<CurrentT> currentPayloadCoder) {
         this.originalPayloadCoder = originalPayloadCoder;
         this.currentPayloadCoder = currentPayloadCoder;
@@ -63,33 +60,33 @@ public class FailsafeElementCoder<OriginalT, CurrentT>
         return currentPayloadCoder;
     }
 
-    public static <OriginalT, CurrentT> FailsafeElementCoder<OriginalT, CurrentT> of(
+    public static <OriginalT, CurrentT> FailsafeRecordCoder<OriginalT, CurrentT> of(
             Coder<OriginalT> originalPayloadCoder, Coder<CurrentT> currentPayloadCoder) {
-        return new FailsafeElementCoder<>(originalPayloadCoder, currentPayloadCoder);
+        return new FailsafeRecordCoder<>(originalPayloadCoder, currentPayloadCoder);
     }
 
     @Override
-    public void encode(FailsafeElement<OriginalT, CurrentT> value, OutputStream outStream)
+    public void encode(FailsafeRecord<OriginalT, CurrentT> value, OutputStream outStream)
             throws IOException {
         if (value == null) {
-            throw new CoderException("The FailsafeElementCoder cannot encode a null object!");
+            throw new CoderException("The FailsafeRecordCoder cannot encode a null object!");
         }
 
         originalPayloadCoder.encode(value.getOriginalPayload(), outStream);
-        currentPayloadCoder.encode(value.getPayload(), outStream);
+        currentPayloadCoder.encode(value.getCurrentPayload(), outStream);
         STRING_CODER.encode(value.getErrorMessage(), outStream);
         STRING_CODER.encode(value.getStacktrace(), outStream);
     }
 
     @Override
-    public FailsafeElement<OriginalT, CurrentT> decode(InputStream inStream) throws IOException {
+    public FailsafeRecord<OriginalT, CurrentT> decode(InputStream inStream) throws IOException {
 
         OriginalT originalPayload = originalPayloadCoder.decode(inStream);
         CurrentT currentPayload = currentPayloadCoder.decode(inStream);
         String errorMessage = STRING_CODER.decode(inStream);
         String stacktrace = STRING_CODER.decode(inStream);
 
-        return FailsafeElement.of(originalPayload, currentPayload)
+        return FailsafeRecord.of(originalPayload, currentPayload)
                 .setErrorMessage(errorMessage)
                 .setStacktrace(stacktrace);
     }
@@ -100,8 +97,8 @@ public class FailsafeElementCoder<OriginalT, CurrentT>
     }
 
     @Override
-    public TypeDescriptor<FailsafeElement<OriginalT, CurrentT>> getEncodedTypeDescriptor() {
-        return new TypeDescriptor<FailsafeElement<OriginalT, CurrentT>>() {}.where(
+    public TypeDescriptor<FailsafeRecord<OriginalT, CurrentT>> getEncodedTypeDescriptor() {
+        return new TypeDescriptor<FailsafeRecord<OriginalT, CurrentT>>() {}.where(
                         new TypeParameter<OriginalT>() {}, originalPayloadCoder.getEncodedTypeDescriptor())
                 .where(new TypeParameter<CurrentT>() {}, currentPayloadCoder.getEncodedTypeDescriptor());
     }

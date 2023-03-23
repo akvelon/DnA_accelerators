@@ -1,15 +1,11 @@
-FROM gcr.io/dataflow-templates-base/java8-template-launcher-base:latest
+FROM apache/beam_python3.9_sdk
 
-RUN apt-get update && apt-get install -y python3.9 python3.9-venv python3-pip python3-setuptools
+RUN apt-get update && apt-get install -y python3-setuptools
 
-ADD anomaly_detection /template/anomaly_detection
+ADD . .
 
-RUN python3.9 -m venv /template
-RUN . /template/bin/activate
+RUN python3 -m pip install hdbscan torch autoembedder category-encoders
+RUN python3 setup.py install
 
-RUN python3.9 /template/anomaly_detection/setup.py install
-RUN python3.9 -m pip install apache-beam[gcp] hdbscan torch autoencoder category-encoders
-
-ENV FLEX_TEMPLATE_JAVA_CLASSPATH=/template/*
-ENV FLEX_TEMPLATE_JAVA_MAIN_CLASS=com.akvelon.salesforce.templates.CdapRunInference
-COPY salesforce-to-bigquery-1.0-SNAPSHOT.jar /template/
+EXPOSE 8088
+ENTRYPOINT python3 -m expansion_service -p 8088 --fully_qualified_name_glob "*"

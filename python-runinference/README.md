@@ -27,5 +27,5 @@ Example:
 
 Notes:
 
-1. You need to provide target `.jar` in each Docker file. By default it is set to `salesforce-to-bigquery-1.0-SNAPSHOT.jar`.
+1. You need to provide target `.jar` in each Docker file. By default, it is set to `salesforce-to-bigquery-1.0-SNAPSHOT.jar`.
 2. In case you uploaded the model to a specific different folder in google cloud storage, you may need to specify the location of model file in `{model_folder}/pipeline/{model_name}/{model_name}.py`

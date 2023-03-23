@@ -2,11 +2,10 @@ import apache_beam as beam
 import category_encoders as ce
 import numpy as np
 import torch
+import sys
 import hdbscan
 from autoembedder import Autoembedder
 from apache_beam.ml.inference.base import RunInference, PredictionResult, KeyedModelHandler
-
-
 from apache_beam.ml.inference.sklearn_inference import SklearnModelHandlerNumpy
 from apache_beam.ml.inference.sklearn_inference import ModelFileType
 from apache_beam.ml.inference.pytorch_inference import PytorchModelHandlerTensor, _convert_to_result
@@ -15,7 +14,8 @@ from apache_beam.ml.inference.pytorch_inference import PytorchModelHandlerTensor
 class CustomSklearnModelHandlerNumpy(SklearnModelHandlerNumpy):
     def run_inference(self, batch, model, inference_args=None):
         predictions = hdbscan.approximate_predict(model, batch)
-        return [PredictionResult(x, y) for x, y in zip(batch, predictions[0])]
+
+        return [PredictionResult(x, y) for x, y in zip(batch[0], predictions[0])]
 
 
 class CustomPytorchModelHandlerTensor(PytorchModelHandlerTensor):
@@ -37,15 +37,7 @@ class CustomPytorchModelHandlerTensor(PytorchModelHandlerTensor):
             return _convert_to_result(batch, predictions)
 
     def get_num_bytes(self, batch) -> int:
-        return sum((el[key].element_size() for el in batch for key in el.keys()))
-
-
-class DecodePrediction(beam.DoFn):
-    def process(self, element):
-        uid, prediction = element
-        cluster = prediction.inference.tolist()
-        bq_dict = {"id": uid, "cluster": cluster}
-        yield bq_dict
+        return sum(sys.getsizeof(element) for element in batch)
 
 
 class AnomalyDetection(beam.PTransform):
@@ -79,11 +71,16 @@ class AnomalyDetection(beam.PTransform):
         amount_mean = 1137889.913561848
         amount_std = 1197302.0975264315
 
-        target_list = [getattr(bq_row, feature_name) for feature_name in set(bq_row._fields)-set(num_fields)-set(id_field)]
+        target_list = [getattr(bq_row, feature_name) for feature_name in set(bq_row._fields)-set(num_fields)-set([id_field])]
         hashed_list = self.hasher.fit_transform(np.asarray([target_list]))
+
+        cont_cols = torch.Tensor([(getattr(bq_row, x)-amount_mean)/amount_std for x in num_fields]).reshape(-1, 1)
+        cat_cols = torch.Tensor(hashed_list.to_numpy().reshape(-1, 1))
+
         result = (getattr(bq_row, id_field),
-                  {'cont_cols': torch.Tensor([(getattr(bq_row, x)-amount_mean)/amount_std for x in num_fields]).reshape(-1, 1),
-                   'cat_cols': torch.Tensor(hashed_list.to_numpy().reshape(-1, 1))})
+                  {'cont_cols': cont_cols,
+                   'cat_cols': cat_cols})
+
         return result
 
     def expand(self, pcoll):

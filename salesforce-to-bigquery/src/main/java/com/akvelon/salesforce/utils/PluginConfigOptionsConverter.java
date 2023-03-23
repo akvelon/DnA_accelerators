@@ -44,7 +44,7 @@ public class PluginConfigOptionsConverter {
     /** Returns map of parameters for Cdap Salesforce batch source plugin. */
     public static Map<String, Object> salesforceBatchSourceOptionsToParamsMap(
             CdapSalesforceSourceOptions options) {
-        return ImmutableMap.<String, Object>builder()
+        ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder()
                 .put(Constants.Reference.REFERENCE_NAME, options.getReferenceName())
                 .put(SalesforceConstants.PROPERTY_USERNAME, options.getUsername())
                 .put(SalesforceConstants.PROPERTY_PASSWORD, options.getPassword())
@@ -52,13 +52,23 @@ public class PluginConfigOptionsConverter {
                 .put(SalesforceConstants.PROPERTY_CONSUMER_KEY, options.getConsumerKey())
                 .put(SalesforceConstants.PROPERTY_CONSUMER_SECRET, options.getConsumerSecret())
                 .put(SalesforceConstants.PROPERTY_LOGIN_URL, options.getLoginUrl())
-                .put(SalesforceSourceConstants.PROPERTY_SOBJECT_NAME, options.getSObjectName())
-                .put(SalesforceSourceConstants.PROPERTY_OFFSET, options.getOffset())
-                .put(SalesforceSourceConstants.PROPERTY_DURATION, options.getDuration())
-                .put(SalesforceSourceConstants.PROPERTY_QUERY, options.getQuery())
-                .put(SalesforceSourceConstants.PROPERTY_DATETIME_AFTER, options.getDatetimeAfter())
-                .put(SalesforceSourceConstants.PROPERTY_DATETIME_BEFORE, options.getDatetimeBefore())
-                .build();
+                .put(SalesforceSourceConstants.PROPERTY_SOBJECT_NAME, options.getSObjectName());
+        if (options.getDatetimeBefore() != null) {
+            builder.put(SalesforceSourceConstants.PROPERTY_DATETIME_BEFORE, options.getDatetimeBefore());
+        }
+        if (options.getDatetimeAfter() != null) {
+            builder.put(SalesforceSourceConstants.PROPERTY_DATETIME_AFTER, options.getDatetimeAfter());
+        }
+        if (options.getDuration() != null) {
+            builder.put(SalesforceSourceConstants.PROPERTY_DURATION, options.getDuration());
+        }
+        if (options.getQuery() != null) {
+            builder.put(SalesforceSourceConstants.PROPERTY_QUERY, options.getQuery());
+        }
+        if (options.getOffset() != null) {
+            builder.put(SalesforceSourceConstants.PROPERTY_OFFSET, options.getOffset());
+        }
+        return builder.build();
     }
 
     /** Returns map of parameters for Cdap Salesforce streaming source plugin. */

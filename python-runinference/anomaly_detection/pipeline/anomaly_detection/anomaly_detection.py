@@ -21,29 +21,28 @@ import category_encoders as ce
 import numpy as np
 import torch
 import sys
+import joblib
 import hdbscan
 from autoembedder import Autoembedder
+from apache_beam.io.filesystems import FileSystems
 from apache_beam.ml.inference.base import RunInference, PredictionResult, KeyedModelHandler
-from apache_beam.ml.inference.sklearn_inference import SklearnModelHandlerNumpy
-from apache_beam.ml.inference.sklearn_inference import ModelFileType
+from apache_beam.ml.inference.sklearn_inference import SklearnModelHandlerNumpy, ModelFileType
 from apache_beam.ml.inference.pytorch_inference import PytorchModelHandlerTensor, _convert_to_result
 
 
 class CustomSklearnModelHandlerNumpy(SklearnModelHandlerNumpy):
     def run_inference(self, batch, model, inference_args=None):
         predictions = hdbscan.approximate_predict(model, batch)
-
         return [PredictionResult(x, y) for x, y in zip(batch[0], predictions[0])]
 
 
 class CustomPytorchModelHandlerTensor(PytorchModelHandlerTensor):
-    def run_inference(self, batch, model, inference_args=None):
 
+    def run_inference(self, batch, model, inference_args=None):
         with torch.no_grad():
             list_of_cont_tensors = []
             list_of_cat_tensors = []
             for item in batch:
-
                 list_of_cont_tensors.append(item['cont_cols'])
                 list_of_cat_tensors.append(item['cat_cols'])
 
@@ -59,33 +58,29 @@ class CustomPytorchModelHandlerTensor(PytorchModelHandlerTensor):
 
 
 class AnomalyDetection(beam.PTransform):
-    def __init__(self):
+    def __init__(self, encoder_uri, model_uri, params_uri):
         super().__init__()
+        self._model_uri = model_uri
+        self._encoder_uri = encoder_uri
+        self._params_uri = params_uri
 
-        self.parameters = {
-            "hidden_layers": [[25, 20], [20, 10]],
-            "epochs": 10,
-            "lr": 0.0001,
-            "verbose": 1,
-            "batch_size": 16,
-        }
-        self.list_cat = [(64, 32)]
-        self.num_cont_features = 1
+        self.params = joblib.load(FileSystems.open(self._params_uri, 'rb'))
 
         self.hasher = ce.HashingEncoder(n_components=64, max_process=1, max_sample=16)
-        self.anomaly_detection_model_handler = CustomSklearnModelHandlerNumpy(model_uri='gs://salesforce-example/anomaly-detection/anomaly_detection.model',
+        self.anomaly_detection_model_handler = CustomSklearnModelHandlerNumpy(model_uri=self._model_uri,
                                                                               model_file_type=ModelFileType.JOBLIB)
-
-        self.encoder_handler = CustomPytorchModelHandlerTensor(state_dict_path='gs://salesforce-example/anomaly-detection/encoder.pth',
+        self.encoder_handler = CustomPytorchModelHandlerTensor(state_dict_path=self._encoder_uri,
                                                                model_class=Autoembedder,
-                                                               model_params={'config': self.parameters,
-                                                                             'num_cont_features': self.num_cont_features,
-                                                                             'embedding_sizes': self.list_cat})
+                                                               model_params={'config': self.params['params'],
+                                                                             'num_cont_features': self.params['params'],
+                                                                             'embedding_sizes': self.params['list_cat']})
 
     def encode_and_normalize(self, bq_row, num_fields=None, id_field='Id'):
         if num_fields is None:
             num_fields = ['Amount']
 
+        # This is mean and deviation calculated on a training data set
+        # These parameters are unique for each set of data
         amount_mean = 1137889.913561848
         amount_std = 1197302.0975264315
 

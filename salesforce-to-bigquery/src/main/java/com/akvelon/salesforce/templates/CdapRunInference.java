@@ -93,6 +93,7 @@ import org.apache.beam.sdk.values.TupleTagList;
 import org.apache.beam.sdk.values.TypeDescriptor;
 import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.base.Throwables;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,8 +152,6 @@ public class CdapRunInference {
             FailsafeRecordCoder.of(
                     NullableCoder.of(StringUtf8Coder.of()), NullableCoder.of(StringUtf8Coder.of()));
 
-    public static final String DEFAULT_PYTHON_SDK_OVERRIDES = "apache/beam_python3.9_sdk:2.45.0," +
-            "gcr.io/dataflow-template-demo-374507/anomaly-detection-expansion-service:latest";
     public static final String ANOMALY_DETECTION_TRANFORM = "anomaly_detection.AnomalyDetection";
 
     /**
@@ -166,7 +165,6 @@ public class CdapRunInference {
                         .withValidation()
                         .as(CdapSalesforceStreamingSourceOptions.class);
 
-            options.setSdkHarnessContainerImageOverrides(DEFAULT_PYTHON_SDK_OVERRIDES);
         // Create the pipeline
         Pipeline pipeline = Pipeline.create(options);
 
@@ -257,6 +255,9 @@ public class CdapRunInference {
                     input.apply(
                     PythonExternalTransform.<PCollection<?>, PCollection<KV<String, Row>>>from(
                                     ANOMALY_DETECTION_TRANFORM, options.getExpansionService())
+                            .withKwarg("model_uri", options.getModelUri())
+                            .withKwarg("encoder_uri", options.getEncoderUri())
+                            .withKwarg("params_uri", options.getParamsUri())
                             .withOutputCoder(outputCoder))
                     .apply("FormatOutput", MapElements.via(new FormatOutput()));
 

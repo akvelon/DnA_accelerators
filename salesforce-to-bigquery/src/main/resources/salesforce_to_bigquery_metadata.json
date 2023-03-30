@@ -123,6 +123,30 @@
       "regexes": [],
       "paramType": "TEXT",
       "isOptional": true
+    },
+    {
+      "name": "modelUri",
+      "label": "Model URI for Python ML RunInference",
+      "helpText": "URI to ML model",
+      "regexes": [],
+      "paramType": "TEXT",
+      "isOptional": true
+    },
+    {
+      "name": "paramsUri",
+      "label": "Params URI for Python ML RunInference",
+      "helpText": "URI to ML model parameters",
+      "regexes": [],
+      "paramType": "TEXT",
+      "isOptional": true
+    },
+    {
+      "name": "encoderUri",
+      "label": "Encoder URI for Python ML RunInference",
+      "helpText": "URI to ML encoder",
+      "regexes": [],
+      "paramType": "TEXT",
+      "isOptional": true
     }
   ]
 }

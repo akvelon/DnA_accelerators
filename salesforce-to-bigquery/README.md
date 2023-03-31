@@ -100,6 +100,30 @@ gcloud dataflow flex-template build ${TEMPLATE_PATH} \
        --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="com.akvelon.salesforce.templates.CdapRunInference"
 ```
 
+#### Additional steps for multi-language templates
+
+1. Navigate to the `resources` folder:
+
+```
+cd /path/to/DataflowTemplates/v2/salesforce-to-bigquery/src/main/resources
+```
+
+2. Rebuild your project using this command:
+
+```
+mvn clean install
+```
+
+3. Copy `salesforce-to-bigquery-1.0-SNAPSHOT.jar` file from the target folder to the `resources` folder from step 1.
+4. Execute the next command:
+
+```
+gcloud builds submit . --tag ${TARGET_GCR_IMAGE}:latest
+```
+
+*Note: this command will replace the default image to the image with Java and Python.
+It is needed to run multi-language templates.*
+
 ### Executing Template
 
 To deploy the pipeline, you should refer to the template file and pass the

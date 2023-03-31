@@ -74,7 +74,6 @@ class AnomalyDetection(beam.PTransform):
                                                                model_params={'config': self.params['params'],
                                                                              'num_cont_features': self.params['num_cont_features'],
                                                                              'embedding_sizes': self.params['list_cat']})
-        print(self.encoder_handler)
 
     def encode_and_normalize(self, bq_row, num_fields=None, id_field='Id'):
         if num_fields is None:

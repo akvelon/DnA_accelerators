@@ -36,7 +36,6 @@ public interface CdapSalesforceStreamingSourceOptions extends DataflowPipelineOp
     //Python
 
     @Description("Python expansion service in format host:port")
-    @Default.String("34.66.122.159:8088")
     String getExpansionService();
 
     void setExpansionService(String expansionService);

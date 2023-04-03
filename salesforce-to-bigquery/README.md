@@ -18,8 +18,8 @@ This section describes what is needed to get the template up and running.
 #### Pipeline variables:
 
 ```
-PROJECT=<my-project>
-BUCKET_NAME=<my-bucket>
+PROJECT=<my-gcp-project>
+BUCKET_NAME=<my-cloud-storage-bucket>
 REGION=<my-region>
 ```
 
@@ -41,11 +41,6 @@ TARGET_GCR_IMAGE=gcr.io/${PROJECT}/${IMAGE_NAME}
 BASE_CONTAINER_IMAGE=<my-base-container-image>
 BASE_CONTAINER_IMAGE_VERSION=<my-base-container-image-version>
 TEMPLATE_PATH="gs://${BUCKET_NAME}/templates/salesforce-to-bigquery.json"
-```
-OPTIONAL
-```
-JS_PATH=gs://path/to/udf
-JS_FUNC_NAME=my-js-function
 ```
 
 ## Build Cdap Salesforce Streaming to BigQuery Flex Dataflow Template

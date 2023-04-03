@@ -76,7 +76,7 @@ public class CdapSalesforceBatchToBigQuery {
     }
 
     /**
-     * Runs a pipeline which reads records from CDAP Salesforce plugin.
+     * Runs a pipeline that reads records from Salesforce via CDAP plugin.
      *
      * @param options arguments to the pipeline
      */

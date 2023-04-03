@@ -31,11 +31,11 @@
             <artifactId>cdap-api-common</artifactId>
             <version>${cdap.version}</version>
             <exclusions>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jul-to-slf4j</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-jdk14</artifactId>
                 </exclusion>
@@ -46,11 +46,11 @@
             <artifactId>hydrator-common</artifactId>
             <version>2.4.0</version>
             <exclusions>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jul-to-slf4j</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-jdk14</artifactId>
                 </exclusion>
@@ -61,11 +61,11 @@
             <artifactId>cdap-salesforce-plugins</artifactId>
             <version>1.5.1</version>
             <exclusions>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jul-to-slf4j</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-jdk14</artifactId>
                 </exclusion>
@@ -76,11 +76,11 @@
             <artifactId>cdap-api</artifactId>
             <version>${cdap.version}</version>
             <exclusions>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jul-to-slf4j</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-jdk14</artifactId>
                 </exclusion>
@@ -91,11 +91,11 @@
             <artifactId>cdap-etl-api</artifactId>
             <version>${cdap.version}</version>
             <exclusions>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jul-to-slf4j</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-jdk14</artifactId>
                 </exclusion>
@@ -106,11 +106,11 @@
             <artifactId>cdap-common</artifactId>
             <version>${cdap.version}</version>
             <exclusions>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jul-to-slf4j</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-jdk14</artifactId>
                 </exclusion>
@@ -121,11 +121,11 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.13.3</version>
             <exclusions>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jul-to-slf4j</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-jdk14</artifactId>
                 </exclusion>
@@ -136,11 +136,11 @@
             <artifactId>jackson-module-scala_2.11</artifactId>
             <version>2.13.3</version>
             <exclusions>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jul-to-slf4j</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-jdk14</artifactId>
                 </exclusion>
@@ -151,11 +151,11 @@
             <artifactId>guava</artifactId>
             <version>30.1-jre</version>
             <exclusions>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jul-to-slf4j</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-jdk14</artifactId>
                 </exclusion>
@@ -166,11 +166,11 @@
             <artifactId>google-api-client</artifactId>
             <version>1.31.1</version>
             <exclusions>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jul-to-slf4j</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-jdk14</artifactId>
                 </exclusion>
@@ -181,11 +181,11 @@
             <artifactId>util</artifactId>
             <version>2.2.6</version>
             <exclusions>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jul-to-slf4j</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-jdk14</artifactId>
                 </exclusion>

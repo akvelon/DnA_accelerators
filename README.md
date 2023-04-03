@@ -7,7 +7,7 @@ these operations possible is the
 [Google Cloud Dataflow](https://cloud.google.com/dataflow/) service combined
 with a set of [Apache Beam](https://beam.apache.org/) SDK templated pipelines.
 
-Google is providing this collection of pre-implemented Dataflow templates as a
+Akvelon is providing this collection of pre-implemented Dataflow templates as a
 reference and to provide easy customization for developers wanting to extend
 their functionality.
 

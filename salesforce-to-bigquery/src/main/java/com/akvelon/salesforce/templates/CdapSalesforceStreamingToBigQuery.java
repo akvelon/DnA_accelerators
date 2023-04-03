@@ -155,7 +155,7 @@ public class CdapSalesforceStreamingToBigQuery {
     }
 
     /**
-     * Runs a pipeline which reads records from CDAP Salesforce and writes them to .txt file.
+     * Runs a pipeline that reads records from CDAP Salesforce and writes them to BigQuery.
      *
      * @param options arguments to the pipeline
      */

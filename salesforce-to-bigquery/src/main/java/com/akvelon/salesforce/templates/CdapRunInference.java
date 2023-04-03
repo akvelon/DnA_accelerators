@@ -180,7 +180,7 @@ public class CdapRunInference {
     }
 
     /**
-     * Runs a pipeline which reads records from CDAP Salesforce and writes them to .txt file.
+     * Runs a pipeline which reads records from CDAP Salesforce and writes them to BigQuery.
      *
      * @param options arguments to the pipeline
      */
@@ -465,13 +465,13 @@ public class CdapRunInference {
 
         @Override
         public String apply(KV<String, Row> input) {
-            if (input != null && input.getValue() != null) {
-                LOG.info(input.getValue().toString());
-                Long cluster = input.getValue().getValue(INFERENCE);
-                RunInferenceResult result = new RunInferenceResult(input.getKey(), cluster);
-                return GSON.toJson(result);
+            if (input == null || input.getValue() == null) {
+                return "";
             }
-            return "";
+            LOG.info(input.getValue().toString());
+            Long cluster = input.getValue().getValue(INFERENCE);
+            RunInferenceResult result = new RunInferenceResult(input.getKey(), cluster);
+            return GSON.toJson(result);
         }
     }
 

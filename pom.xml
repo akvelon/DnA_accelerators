@@ -47,7 +47,6 @@
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
         <os-maven-plugin.version>1.5.0.Final</os-maven-plugin.version>
         <mvn-target-dir>${basedir}/target</mvn-target-dir>
-        <spotless-maven-plugin.version>2.12.1</spotless-maven-plugin.version>
         <cdap.version>6.5.1</cdap.version>
     </properties>
 
@@ -73,19 +72,19 @@
             <groupId>org.apache.beam</groupId>
             <artifactId>beam-sdks-java-io-cdap</artifactId>
             <exclusions>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jul-to-slf4j</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-jdk14</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-reload4j</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
@@ -96,15 +95,15 @@
             <artifactId>beam-sdks-java-io-sparkreceiver-2</artifactId>
             <version>2.45.13</version>
             <exclusions>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jcl-over-slf4j</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
@@ -166,15 +165,15 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.13.3</version>
             <exclusions>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jul-to-slf4j</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-jdk14</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
@@ -373,32 +372,11 @@
                 </executions>
             </plugin>
 
-
-            <plugin>
-                <!-- Set up Javadoc configuration for javadoc run via in the Maven
-                     build. Teleport only uses the plugin to create the individual javadoc
-                     attached artifacts used for IDEs. The combined javadoc for the
-                     website is built in the sdks/java/javadoc directory. Rather than
-                     duplicate a raft of configuration between the ant.xml there and
-                     here, we leave things simple here. -->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${maven-javadoc-plugin.version}</version>
-                <configuration>
-                    <windowtitle>Teleport for Java, version ${project.version} API</windowtitle>
-                    <doctitle>Teleport for Java, version ${project.version}</doctitle>
-                    <use>false</use>
-                    <quiet>true</quiet>
-                    <notimestamp>true</notimestamp>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>${maven-jar-plugin.version}</version>
             </plugin>
-
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -506,64 +484,6 @@
                     </systemProperties>
                 </configuration>
             </plugin>
-
-            <!-- Keep this equivalent with ../pom.xml. Unfortunately, we need to duplicate the
-            plugin until we can fix errors introduced by adding v2 as a child module of the root
-            teleport module. -->
-            <plugin>
-                <groupId>com.diffplug.spotless</groupId>
-                <artifactId>spotless-maven-plugin</artifactId>
-                <version>${spotless-maven-plugin.version}</version>
-                <configuration>
-                    <formats>
-                        <!-- Avoid trailing whitespace and require ending newline. -->
-                        <format>
-                            <includes>
-                                <!-- .gitignore does not need to be included here. -->
-                                <include>*.md</include>
-                            </includes>
-                            <trimTrailingWhitespace/>
-                            <endWithNewline/>
-                        </format>
-                    </formats>
-                    <java>
-                        <toggleOffOn />
-                        <googleJavaFormat>
-                            <version>1.8</version>
-                            <style>GOOGLE</style>
-                        </googleJavaFormat>
-                        <licenseHeader>
-                            <file>JAVA_LICENSE_HEADER</file>
-                        </licenseHeader>
-                    </java>
-                </configuration>
-                <!-- Bind to verify. -->
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <!-- The following snapshot profile allows us to test teleport with
-             unreleased apache sw. E.g. to test with a snapshot version of beam we
-             could do
-                  mvn test -Psnapshot -Dbeam.version=A.B.C-SNAPSHOT
-          -->
-        <profile>
-            <id>snapshot</id>
-            <repositories>
-                <repository>
-                    <id>apache.snapshots</id>
-                    <url>https://repository.apache.org/content/repositories/snapshots</url>
-                </repository>
-            </repositories>
-        </profile>
-    </profiles>
-
 </project>

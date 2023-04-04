@@ -93,7 +93,7 @@ public class CdapSalesforceBatchToBigQuery {
          */
 
         pipeline
-                .apply("readFromCdapSalesforce", FormatInputTransform.readFromCdapSalesforce(paramsMap))
+                .apply("readFromCdapSalesforce", FormatInputTransform.readFromCdapSalesforceBatch(paramsMap))
                 .setCoder(
                         KvCoder.of(
                                 SerializableCoder.of(Schema.class), SerializableCoder.of(HashMap.class)))

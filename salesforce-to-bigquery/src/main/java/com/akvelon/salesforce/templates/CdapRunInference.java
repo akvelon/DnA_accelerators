@@ -70,6 +70,7 @@ import org.apache.beam.sdk.io.gcp.bigquery.BigQueryInsertError;
 import org.apache.beam.sdk.io.gcp.bigquery.InsertRetryPolicy;
 import org.apache.beam.sdk.io.gcp.bigquery.TableRowJsonCoder;
 import org.apache.beam.sdk.io.gcp.bigquery.WriteResult;
+import org.apache.beam.sdk.io.hadoop.WritableCoder;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.schemas.Schema;
 import org.apache.beam.sdk.transforms.DoFn;
@@ -79,6 +80,7 @@ import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.transforms.SerializableFunction;
 import org.apache.beam.sdk.transforms.SimpleFunction;
+import org.apache.beam.sdk.transforms.Values;
 import org.apache.beam.sdk.transforms.windowing.AfterProcessingTime;
 import org.apache.beam.sdk.transforms.windowing.GlobalWindows;
 import org.apache.beam.sdk.transforms.windowing.Repeatedly;
@@ -93,7 +95,7 @@ import org.apache.beam.sdk.values.TupleTagList;
 import org.apache.beam.sdk.values.TypeDescriptor;
 import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.base.Throwables;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.io.NullWritable;
 import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -218,7 +220,7 @@ public class CdapRunInference {
          * Step #1: Read messages in from Cdap Salesforce
          */
         PCollection<String> jsonMessages;
-        Window<String> window = Window.<String>into(new GlobalWindows())
+        Window<KV<NullWritable, String>> window = Window.<KV<NullWritable, String>>into(new GlobalWindows())
                     .triggering(Repeatedly.forever(AfterProcessingTime.pastFirstElementInPane()
                             .plusDelayOf(Duration.ZERO)))
                     .discardingFiredPanes()
@@ -226,10 +228,13 @@ public class CdapRunInference {
         jsonMessages = pipeline
                 .apply(
                         "readFromSalesforceSparkReceiver",
-                        FormatInputTransform.readFromSalesforceSparkReceiver(
+                        FormatInputTransform.readFromCdapSalesforceStreaming(
                                 paramsMap, options.getPullFrequencySec(), options.getStartOffset()))
-                .setCoder(StringUtf8Coder.of())
-                .apply("window", window);
+                .setCoder(
+                        KvCoder.of(
+                                NullableCoder.of(WritableCoder.of(NullWritable.class)), StringUtf8Coder.of()))
+                .apply("window", window)
+                .apply(Values.create());
 
         /*
          * Step #2: Transform messages from Cdap Salesforce to Rows

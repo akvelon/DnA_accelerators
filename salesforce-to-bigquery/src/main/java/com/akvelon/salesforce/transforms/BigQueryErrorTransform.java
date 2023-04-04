@@ -14,7 +14,7 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-/** Different {@link PTransform}s and {@link DoFn}s for dealing with BigQuery errors. */
+/** {@link PTransform}s and {@link DoFn}s for handling BigQuery errors. */
 public class BigQueryErrorTransform {
 
     /** Writes strings error messages. */

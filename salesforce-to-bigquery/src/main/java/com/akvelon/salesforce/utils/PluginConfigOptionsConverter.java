@@ -19,7 +19,7 @@
  */
 package com.akvelon.salesforce.utils;
 
-import com.akvelon.salesforce.options.CdapSalesforceSourceOptions;
+import com.akvelon.salesforce.options.CdapSalesforceBatchSourceOptions;
 import com.akvelon.salesforce.options.CdapSalesforceStreamingSourceOptions;
 import io.cdap.plugin.common.Constants;
 import io.cdap.plugin.salesforce.SalesforceConstants;
@@ -43,7 +43,7 @@ public class PluginConfigOptionsConverter {
 
     /** Returns map of parameters for Cdap Salesforce batch source plugin. */
     public static Map<String, Object> salesforceBatchSourceOptionsToParamsMap(
-            CdapSalesforceSourceOptions options) {
+            CdapSalesforceBatchSourceOptions options) {
         ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder()
                 .put(Constants.Reference.REFERENCE_NAME, options.getReferenceName())
                 .put(SalesforceConstants.PROPERTY_USERNAME, options.getUsername())

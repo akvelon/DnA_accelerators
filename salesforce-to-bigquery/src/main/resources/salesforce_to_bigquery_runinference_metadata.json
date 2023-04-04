@@ -1,6 +1,6 @@
 {
   "name": "Salesforce to BigQuery",
-  "description": "Streaming pipeline. Ingests objects from Salesforce to a BigQuery",
+  "description": "Streaming multi-language pipeline (Java + Python ML). Ingests objects from Salesforce to a BigQuery.",
   "parameters": [
     {
       "name": "referenceName",

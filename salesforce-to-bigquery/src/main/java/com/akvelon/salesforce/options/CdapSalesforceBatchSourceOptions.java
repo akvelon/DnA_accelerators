@@ -27,10 +27,10 @@ import org.apache.beam.sdk.options.Description;
 import org.apache.beam.sdk.options.Validation;
 
 /**
- * The {@link CdapSalesforceSourceOptions+} interface provides the custom execution options passed by the
+ * The {@link CdapSalesforceBatchSourceOptions +} interface provides the custom execution options passed by the
  * executor at the command-line for example with Cdap Salesforce plugins.
  */
-public interface CdapSalesforceSourceOptions extends DataflowPipelineOptions {
+public interface CdapSalesforceBatchSourceOptions extends DataflowPipelineOptions {
 
     @Validation.Required
     @Description(SalesforceSourceConstants.PROPERTY_SOBJECT_NAME)

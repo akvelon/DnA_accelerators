@@ -33,9 +33,6 @@ mvn clean compile
 * [Salesforce to Txt](salesforce-to-txt/src/main/java/com/akvelon/salesforce/templates/CdapSalesforceStreamingToTxt.java)
 * [Salesforce to BigQuery](salesforce-to-bigquery/src/main/java/com/akvelon/salesforce/templates/CdapRunInference.java)
 
-For documentation on each template's usage and parameters, please see
-the official [docs](https://cloud.google.com/dataflow/docs/templates/provided-templates).
-
 ## Contact Us
 
 * [Get in touch with us](https://akvelon.com/contact-us/).

@@ -1,21 +1,47 @@
-# Dataflow Flex Template to ingest data from Cdap Salesforce Streaming Plugin to BigQuery
+# Dataflow Flex templates to ingest data from Cdap Salesforce to BigQuery
 
-This directory contains a Dataflow Flex Template that creates a streaming pipeline
+This directory contains a set of Dataflow Flex templates that create a streaming / batch pipeline
 to read data from a [Cdap Salesforce Streaming plugin](https://github.com/data-integrations/salesforce) and write data into BigQuery table.
 
 ## Requirements
 
 - Java 8
 - Salesforce account with data
+- BigQuery table for output
+- Hashicorp Vault (Optional)
 
 ## Getting Started
 
-This section describes what is needed to get the template up and running.
-- Set up the environment
-- Build Cdap Salesforce Streaming to BigQuery Flex Template
-- Create a Dataflow job to ingest data using the template
+This section describes what is needed to run precompiled template that already built.
+- Artifacts of Flex template
+- Template parameters to set
+- How to create and run Dataflow job from Flex Template
 
-#### Pipeline variables:
+#### Artifacts
+
+TBD
+
+#### Template parameters
+
+TBD
+
+#### Run Dataflow job
+
+TBD
+
+## How to use templates
+
+This section describes how to build and run one of the available templates in this repository.
+
+### Available template pipelines
+
+- [Salesforce to BigQuery Batch template](src/main/java/com/akvelon/salesforce/templates/CdapSalesforceBatchToBigQuery.java)
+- [Salesforce to BigQuery Streaming template](src/main/java/com/akvelon/salesforce/templates/CdapSalesforceStreamingToBigQuery.java)
+- [Salesforce to BigQuery Streaming multi-language (Java + Python ML) template](src/main/java/com/akvelon/salesforce/templates/CdapRunInference.java)
+
+### First steps
+
+#### Setting up pipeline variables:
 
 ```
 PROJECT=<my-gcp-project>
@@ -33,22 +59,17 @@ Create the bucket in Google Cloud Storage if it doesn't exist yet:
 gsutil mb gs://${BUCKET_NAME}
 ```
 
-#### Containerization variables:
+#### Setting up containerization variables:
 
 ```
 IMAGE_NAME=<my-image-name>
 TARGET_GCR_IMAGE=gcr.io/${PROJECT}/${IMAGE_NAME}
 BASE_CONTAINER_IMAGE=<my-base-container-image>
 BASE_CONTAINER_IMAGE_VERSION=<my-base-container-image-version>
-TEMPLATE_PATH="gs://${BUCKET_NAME}/templates/salesforce-to-bigquery.json"
+TEMPLATE_PATH="gs://${BUCKET_NAME}/templates/your-template-name.json"
 ```
 
-## Build Cdap Salesforce Streaming to BigQuery Flex Dataflow Template
-
-Dataflow Flex Templates package the pipeline as a Docker image and stage these images
-on your project's [Container Registry](https://cloud.google.com/container-registry).
-
-### Assembling the Uber-JAR
+#### Assembling the Uber-JAR
 
 The Dataflow Flex Templates require your Java project to be built into
 an Uber JAR file.
@@ -65,13 +86,49 @@ Build the Uber JAR:
 mvn package -am -pl salesforce-to-bigquery
 ```
 
-ℹ️ An **Uber JAR** - also known as **fat JAR** - is a single JAR file that contains
+An **Uber JAR** - also known as **fat JAR** - is a single JAR file that contains
 both target package *and* all its dependencies.
 
 The result of the `package` task execution is a `salesforce-to-bigquery-1.0-SNAPSHOT.jar`
 file that is generated under the `target` folder in salesforce-to-bigquery directory.
 
-### Creating the Dataflow Flex Template
+### Build Salesforce to BigQuery Batch template
+
+Dataflow Flex Templates package the pipeline as a Docker image and stage these images
+on your project's [Container Registry](https://cloud.google.com/container-registry).
+
+#### Creating the Dataflow Flex Template
+
+TBD
+
+#### Executing Template
+
+TBD
+
+### Build Salesforce to BigQuery Streaming template
+
+Dataflow Flex Templates package the pipeline as a Docker image and stage these images
+on your project's [Container Registry](https://cloud.google.com/container-registry).
+
+#### Creating the Dataflow Flex Template
+
+TBD
+
+#### Executing Template
+
+TBD
+
+### Build Salesforce to BigQuery Streaming multi-language (Java + Python ML) template
+
+Dataflow Flex Templates package the pipeline as a Docker image and stage these images
+on your project's [Container Registry](https://cloud.google.com/container-registry).
+
+#### Prerequisites
+
+Multi-language Dataflow templates requires Python Expansion service.
+Additional information you can find here: TBD.
+
+#### Creating the Dataflow Flex Template
 
 To execute the template you need to create the template spec file containing all
 the necessary information to run the job. This template already has the following
@@ -119,7 +176,7 @@ gcloud builds submit . --tag ${TARGET_GCR_IMAGE}:latest
 *Note: this command will replace the default image to the image with Java and Python.
 It is needed to run multi-language templates.*
 
-### Executing Template
+#### Executing Template
 
 To deploy the pipeline, you should refer to the template file and pass the
 [parameters](https://cloud.google.com/dataflow/docs/guides/specifying-exec-params#setting-other-cloud-dataflow-pipeline-options)

@@ -45,8 +45,6 @@ def main(argv):
   pipeline_options = PipelineOptions(
       pipeline_args + ["--experiments=beam_fn_api", "--sdk_location=container"])
 
-  # Set this before any pipeline construction occurs.
-  # See https://github.com/apache/beam/issues/21615
   pickler.set_library(pipeline_options.view_as(SetupOptions).pickle_library)
 
   with fully_qualified_named_transform.FullyQualifiedNamedTransform.with_filter(
@@ -59,6 +57,7 @@ def main(argv):
         artifact_service.ArtifactRetrievalService(
             artifact_service.BeamFilesystemHandler(None).file_reader),
         server)
+    # We changed from localhost here
     server.add_insecure_port('0.0.0.0:{}'.format(known_args.port))
     server.start()
     _LOGGER.info('Listening for expansion requests at %d', known_args.port)

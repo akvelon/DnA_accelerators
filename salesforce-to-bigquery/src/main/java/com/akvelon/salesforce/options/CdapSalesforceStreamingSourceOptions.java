@@ -33,31 +33,6 @@ import org.apache.beam.sdk.options.Validation;
  */
 public interface CdapSalesforceStreamingSourceOptions extends DataflowPipelineOptions {
 
-    //Python
-
-    @Description("Python expansion service in format host:port")
-    String getExpansionService();
-
-    void setExpansionService(String expansionService);
-
-    @Description("Model URI for Python ML RunInference")
-    @Default.String("gs://salesforce-example/anomaly-detection/anomaly_detection.model")
-    String getModelUri();
-
-    void setModelUri(String modelUri);
-
-    @Description("Encoder URI for Python ML RunInference")
-    @Default.String("gs://salesforce-example/anomaly-detection/encoder.pth")
-    String getEncoderUri();
-
-    void setEncoderUri(String encoderUri);
-
-    @Description("Model params URI for Python ML RunInference")
-    @Default.String("gs://salesforce-example/anomaly-detection/model.params")
-    String getParamsUri();
-
-    void setParamsUri(String paramsUri);
-
     // Base
 
     @Validation.Required

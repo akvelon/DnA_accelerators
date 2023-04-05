@@ -29,9 +29,13 @@ TBD
 
 TBD
 
-## How to use templates
+## How to build and run templates
 
 This section describes how to build and run one of the available templates in this repository.
+You should follow:
+1. First steps paragraph.
+2. Building particular template paragraph.
+3. Executing template paragraph.
 
 ### Available template pipelines
 
@@ -121,9 +125,33 @@ gcloud dataflow flex-template build ${TEMPLATE_PATH} \
        --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="com.akvelon.salesforce.templates.CdapSalesforceBatchToBigQuery"
 ```
 
-#### Executing Template
+#### Template Parameters
 
-TBD
+To deploy the pipeline, you should refer to the template file and pass the
+[parameters](https://cloud.google.com/dataflow/docs/guides/specifying-exec-params#setting-other-cloud-dataflow-pipeline-options)
+required by the pipeline.
+
+The template requires the following parameters:
+- `referenceName` - This will be used to uniquely identify this source.
+- `loginUrl` - Salesforce endpoint to authenticate to. Example: *'https://MyDomainName.my.salesforce.com/services/oauth2/token'*.
+- `SObjectName` - Salesforce object to pull supported by CDAP Salesforce Streaming Source.
+- `pushTopicName` - name of the push topic that was created from query for some sObject. This push topic should have enabled *pushTopicNotifyCreate* property.
+  If push topic with such name doesn't exist, then new push topic for provided **'sObjectName'** will be created automatically.
+- `outputTableSpec` - Big Query table spec to write the output to.
+
+The template allows for the user to supply the following optional parameters:
+- `offset` - Salesforce SObject query offset. Example: *1 days, 2 hours, 30 minutes*.
+- `duration` - Salesforce SObject query duration. Example: *1 days, 2 hours, 30 minutes*.
+- `query` - The SOQL query to retrieve results from. Example: *select Id, Name from Opportunity*.
+- `datetimeBefore` - Salesforce SObject query datetime filter. Example: *2019-03-12T11:29:52Z*.
+- `datetimeAfter` - Salesforce SObject query datetime filter. Example: *2019-03-12T11:29:52Z*.
+
+You can provide the next secured parameters directly instead of providing HashiCorp Vault parameters:
+- `username` - Salesforce username.
+- `password` - Salesforce user password.
+- `securityToken` - Salesforce security token.
+- `consumerKey` - Salesforce connected app's consumer key.
+- `consumerSecret` - Salesforce connected app's consumer secret.
 
 ### Build Salesforce to BigQuery Streaming template
 
@@ -154,9 +182,34 @@ gcloud dataflow flex-template build ${TEMPLATE_PATH} \
        --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="com.akvelon.salesforce.templates.CdapSalesforceStreamingToBigQuery"
 ```
 
-#### Executing Template
+#### Template Parameters
 
-TBD
+To deploy the pipeline, you should refer to the template file and pass the
+[parameters](https://cloud.google.com/dataflow/docs/guides/specifying-exec-params#setting-other-cloud-dataflow-pipeline-options)
+required by the pipeline.
+
+The template requires the following parameters:
+- `referenceName` - This will be used to uniquely identify this source.
+- `loginUrl` - Salesforce endpoint to authenticate to. Example: *'https://MyDomainName.my.salesforce.com/services/oauth2/token'*.
+- `SObjectName` - Salesforce object to pull supported by CDAP Salesforce Streaming Source.
+- `pushTopicName` - name of the push topic that was created from query for some sObject. This push topic should have enabled *pushTopicNotifyCreate* property.
+  If push topic with such name doesn't exist, then new push topic for provided **'sObjectName'** will be created automatically.
+- `outputTableSpec` - Big Query table spec to write the output to.
+
+The template allows for the user to supply the following optional parameters:
+- `pullFrequencySec` - delay in seconds between polling for new records updates.
+- `startOffset` - inclusive start offset from which the reading should be started.
+- `secretStoreUrl` - URL to Salesforce credentials in HashiCorp Vault secret storage in the format
+  'http(s)://vaultip:vaultport/path/to/credentials'.
+- `vaultToken` - Token to access HashiCorp Vault secret storage.
+- `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in <project-id>:<dataset>.<table> format.
+
+You can provide the next secured parameters directly instead of providing HashiCorp Vault parameters:
+- `username` - Salesforce username.
+- `password` - Salesforce user password.
+- `securityToken` - Salesforce security token.
+- `consumerKey` - Salesforce connected app's consumer key.
+- `consumerSecret` - Salesforce connected app's consumer secret.
 
 ### Build Salesforce to BigQuery Streaming multi-language (Java + Python ML) template
 
@@ -216,7 +269,7 @@ gcloud builds submit . --tag ${TARGET_GCR_IMAGE}:latest
 *Note: this command will replace the default image to the image with Java and Python.
 It is needed to run multi-language templates.*
 
-#### Executing Template
+#### Template Parameters
 
 To deploy the pipeline, you should refer to the template file and pass the
 [parameters](https://cloud.google.com/dataflow/docs/guides/specifying-exec-params#setting-other-cloud-dataflow-pipeline-options)
@@ -249,7 +302,9 @@ You can provide the next secured parameters directly instead of providing HashiC
 - `consumerKey` - Salesforce connected app's consumer key.
 - `consumerSecret` - Salesforce connected app's consumer secret.
 
-You can do this in 3 different ways:
+### Executing template
+
+You can execute template in 3 different ways:
 1. Using [Dataflow Google Cloud Console](https://console.cloud.google.com/dataflow/jobs)
 
 2. Using `gcloud` CLI tool
@@ -263,16 +318,7 @@ You can do this in 3 different ways:
         --parameters consumerSecret="your-secret" \
         --parameters loginUrl="https://MyDomainName.my.salesforce.com/services/oauth2/token" \
         --parameters SObjectName="Accounts" \
-        --parameters pushTopicName="your-topic" \
-        --parameters secretStoreUrl="http(s)://host:port/path/to/credentials" \
-        --parameters vaultToken="your-token" \
-        --parameters referenceName="your-reference-name" \
-        --parameters outputTableSpec="your-table" \
-        --parameters outputDeadLetterTable="your-dead-letter-table" \
-        --parameters expansionService="your-expansion-service" \
-        --parameters modelUri="your-model-uri" \
-        --parameters paramsUri="your-params-uri" \
-        --parameters encoderUri="your-encoder-uri" \
+        #...other parameters
         --region "${REGION}"
     ```
 3. With a REST API request
@@ -295,17 +341,8 @@ You can do this in 3 different ways:
                      "consumerKey"="your-key",
                      "consumerSecret"="your-secret",
                      "loginUrl"="https://MyDomainName.my.salesforce.com/services/oauth2/token",
-                     "SObjectName"="Accounts",
-                     "pushTopicName": "your-topic",
-                     "secretStoreUrl": "http(s)://host:port/path/to/credentials",
-                     "vaultToken": "your-token",
-                     "referenceName": "your-reference-name",
-                     "outputTableSpec": "your-table",
-                     "outputDeadLetterTable": "your-dead-letter-table",
-                     "expansionService": "your-expansion-service",
-                     "modelUri": "your-model-uri",
-                     "paramsUri": "your-params-uri",
-                     "encoderUri": "your-encoder-uri"
+                     "SObjectName"="Accounts"
+                      //...other parameters
                  }
              }
          }

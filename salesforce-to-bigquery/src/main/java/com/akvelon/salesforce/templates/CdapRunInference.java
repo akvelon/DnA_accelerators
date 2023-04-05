@@ -41,6 +41,7 @@ import static com.akvelon.salesforce.utils.SalesforceConstants.STAGE_NAME;
 import static com.akvelon.salesforce.utils.SalesforceConstants.TYPE;
 import static com.akvelon.salesforce.utils.VaultUtils.getSalesforceCredentialsFromVault;
 
+import com.akvelon.salesforce.options.CdapSalesforceStreamingMLSourceOptions;
 import com.akvelon.salesforce.options.CdapSalesforceStreamingSourceOptions;
 import com.akvelon.salesforce.transforms.BigQueryErrorTransform;
 import com.akvelon.salesforce.transforms.FormatInputTransform;
@@ -162,10 +163,10 @@ public class CdapRunInference {
      * @param args Command line arguments to the pipeline.
      */
     public static void main(String[] args) {
-        CdapSalesforceStreamingSourceOptions options =
+        CdapSalesforceStreamingMLSourceOptions options =
                 PipelineOptionsFactory.fromArgs(args)
                         .withValidation()
-                        .as(CdapSalesforceStreamingSourceOptions.class);
+                        .as(CdapSalesforceStreamingMLSourceOptions.class);
 
         // Create the pipeline
         Pipeline pipeline = Pipeline.create(options);
@@ -187,7 +188,7 @@ public class CdapRunInference {
      * @param options arguments to the pipeline
      */
     public static void run(
-            Pipeline pipeline, CdapSalesforceStreamingSourceOptions options) {
+            Pipeline pipeline, CdapSalesforceStreamingMLSourceOptions options) {
         if (options.getSecretStoreUrl() != null && options.getVaultToken() != null) {
             Map<String, String> credentials =
                     getSalesforceCredentialsFromVault(options.getSecretStoreUrl(), options.getVaultToken());

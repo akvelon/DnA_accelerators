@@ -23,7 +23,6 @@ import static org.apache.beam.sdk.util.Preconditions.checkArgumentNotNull;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
-import io.cdap.plugin.salesforce.plugin.source.streaming.SalesforceStreamingSource;
 import java.util.HashMap;
 import org.apache.beam.sdk.io.cdap.Plugin;
 import org.apache.beam.sdk.transforms.SerializableFunction;
@@ -44,22 +43,10 @@ public class GetOffsetUtils {
     private static final String SALESFORCE_REPLAY_ID = "replayId";
 
     /**
-     * Function for getting offset for given streaming Cdap {@link
-     * io.cdap.cdap.api.annotation.Plugin}.
-     */
-    public static SerializableFunction<String, Long> getOffsetFnForCdapPlugin(Class<?> pluginClass) {
-        if (SalesforceStreamingSource.class.equals(pluginClass)) {
-            return getOffsetFnForSalesforce();
-        }
-        throw new UnsupportedOperationException(
-                String.format("Given plugin class '%s' is not supported!", pluginClass.getName()));
-    }
-
-    /**
      * Function for getting offset for Salesforce record that has {@link #SALESFORCE_REPLAY_ID} field.
      */
     @SuppressWarnings({"rawtypes"})
-    private static SerializableFunction<String, Long> getOffsetFnForSalesforce() {
+    public static SerializableFunction<String, Long> getOffsetFnForSalesforce() {
         return input -> {
             if (input != null) {
                 try {

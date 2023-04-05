@@ -27,41 +27,48 @@ import org.apache.beam.sdk.options.Description;
 import org.apache.beam.sdk.options.Validation;
 
 /**
- * The {@link CdapSalesforceStreamingSourceOptions} interface provides the custom execution options passed by the
- * executor at the command-line for example with Cdap Salesfroce plugins.
+ * The {@link CdapSalesforceBatchSourceOptions +} interface provides the custom execution options passed by the
+ * executor at the command-line for example with Cdap Salesforce plugins.
  */
-public interface CdapSalesforceStreamingSourceOptions extends DataflowPipelineOptions {
-
-    // Base
+public interface CdapSalesforceBatchSourceOptions extends DataflowPipelineOptions {
 
     @Validation.Required
-    @Description(Constants.Reference.REFERENCE_NAME_DESCRIPTION)
-    String getReferenceName();
+    @Description(SalesforceSourceConstants.PROPERTY_SOBJECT_NAME)
+    String getSObjectName();
 
-    void setReferenceName(String referenceName);
+    void setSObjectName(String sObjectName);
 
-    //Salesforce
+    @Validation.Required
+    @Description("Big Query table spec to write the output to / path to output txt file")
+    String getOutputTableSpec();
 
+    void setOutputTableSpec(String outputTableSpec);
+
+    @Validation.Required
     @Description(SalesforceConstants.PROPERTY_USERNAME)
     String getUsername();
 
     void setUsername(String username);
 
+    @Validation.Required
     @Description(SalesforceConstants.PROPERTY_PASSWORD)
     String getPassword();
 
     void setPassword(String password);
 
+    @Validation.Required
     @Description(SalesforceConstants.PROPERTY_SECURITY_TOKEN)
     String getSecurityToken();
 
     void setSecurityToken(String securityToken);
 
+    @Validation.Required
     @Description(SalesforceConstants.PROPERTY_CONSUMER_KEY)
     String getConsumerKey();
 
     void setConsumerKey(String consumerKey);
 
+    @Validation.Required
     @Description(SalesforceConstants.PROPERTY_CONSUMER_SECRET)
     String getConsumerSecret();
 
@@ -73,47 +80,36 @@ public interface CdapSalesforceStreamingSourceOptions extends DataflowPipelineOp
 
     void setLoginUrl(String loginUrl);
 
-    //Source
-
     @Validation.Required
-    @Description(SalesforceSourceConstants.PROPERTY_SOBJECT_NAME)
-    String getSObjectName();
+    @Description(Constants.Reference.REFERENCE_NAME_DESCRIPTION)
+    String getReferenceName();
 
-    void setSObjectName(String sObjectName);
+    void setReferenceName(String referenceName);
 
-    @Validation.Required
-    @Description(
-            "Path to output folder with filename prefix."
-                    + "It will write a set of .txt files with names like {prefix}-###.")
-    String getOutputTxtFilePathPrefix();
+    //Optional
 
-    void setOutputTxtFilePathPrefix(String outputTxtFilePathPrefix);
+    @Description("Salesforce SObject query offset.")
+    String getOffset();
 
-    //Streaming
+    void setOffset(String offset);
 
-    @Validation.Required
-    @Description("Salesforce push topic name. Plugin will track updates from this topic.")
-    String getPushTopicName();
+    @Description("Salesforce SObject query duration.")
+    String getDuration();
 
-    void setPushTopicName(String pushTopicName);
+    void setDuration(String duration);
 
-    @Description("Delay in seconds between polling for new records updates.")
-    Long getPullFrequencySec();
+    @Description("Salesforce SObject query datetime filter. Example: 2019-03-12T11:29:52Z")
+    String getDatetimeBefore();
 
-    void setPullFrequencySec(Long pullFrequencySec);
+    void setDatetimeBefore(String datetimeBefore);
 
-    @Description("Inclusive start offset from which the reading should be started.")
-    Long getStartOffset();
+    @Description("Salesforce SObject query datetime filter. Example: 2019-03-12T11:29:52Z")
+    String getDatetimeAfter();
 
-    void setStartOffset(Long startOffset);
+    void setDatetimeAfter(String datetimeAfter);
 
-    @Description("URL to credentials in Vault")
-    String getSecretStoreUrl();
+    @Description("The SOQL query to retrieve results from. Example: select Id, Name from Opportunity")
+    String getQuery();
 
-    void setSecretStoreUrl(String secretStoreUrl);
-
-    @Description("Vault token")
-    String getVaultToken();
-
-    void setVaultToken(String vaultToken);
+    void setQuery(String query);
 }

@@ -19,4 +19,4 @@
  */
 
 /** Cdap Salesforce template. */
-package com.akvelon.salesforce.options;
+package com.akvelon.salesforce.examples;

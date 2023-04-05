@@ -1,5 +1,5 @@
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  ~ Copyright (C) 2019 Google Inc.
+  ~ Copyright 2023 Akvelon Inc.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License"); you may not
   ~ use this file except in compliance with the License. You may obtain a copy of
@@ -25,6 +25,7 @@
 
     <modules>
         <module>salesforce-to-txt</module>
+        <module>salesforce-to-bigquery</module>
     </modules>
 
     <properties>
@@ -33,16 +34,9 @@
         <autovalue.annotations.version>1.7.4</autovalue.annotations.version>
         <autovalue.service.version>1.0-rc6</autovalue.service.version>
         <checkstyle.version>8.7</checkstyle.version>
-        <beam.version>2.42.0</beam.version>
-        <beam-vendor-guava.version>0.1</beam-vendor-guava.version>
-        <hamcrest.version>2.1</hamcrest.version>
-        <hadoop.version>2.10.1</hadoop.version>
-        <guava.version>30.1-jre</guava.version>
+        <beam.version>2.45.0</beam.version>
         <java.version>1.8</java.version>
         <jib.maven.version>2.6.0</jib.maven.version>
-        <junit.version>4.13</junit.version>
-        <junit-dep.version>4.10</junit-dep.version>
-        <opensensus.version>0.24.0</opensensus.version>
         <surefire.version>2.21.0</surefire.version>
         <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
         <maven-compiler-plugin.version>3.6.2</maven-compiler-plugin.version>
@@ -50,15 +44,9 @@
         <maven-enforcer-plugin.version>3.0.0-M1</maven-enforcer-plugin.version>
         <maven-javadoc-plugin.version>3.0.0-M1</maven-javadoc-plugin.version>
         <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
-        <maven-shade-plugin.version>3.0.0</maven-shade-plugin.version>
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
-        <mockito-core.version>3.0.0</mockito-core.version>
         <os-maven-plugin.version>1.5.0.Final</os-maven-plugin.version>
-        <slf4j.version>1.7.25</slf4j.version>
         <mvn-target-dir>${basedir}/target</mvn-target-dir>
-        <json.version>20200518</json.version>
-        <excluded.spanner.tests>com.google.cloud.teleport.v2.spanner.IntegrationTest</excluded.spanner.tests>
-        <spotless-maven-plugin.version>2.12.1</spotless-maven-plugin.version>
         <cdap.version>6.5.1</cdap.version>
     </properties>
 
@@ -83,27 +71,73 @@
         <dependency>
             <groupId>org.apache.beam</groupId>
             <artifactId>beam-sdks-java-io-cdap</artifactId>
-            <version>2.45.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>jul-to-slf4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-jdk14</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-reload4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.beam</groupId>
             <artifactId>beam-sdks-java-io-sparkreceiver-2</artifactId>
-            <version>2.45.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.beam</groupId>
-            <artifactId>beam-sdks-java-io-hadoop-format</artifactId>
-            <version>2.42.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.beam</groupId>
-            <artifactId>beam-sdks-java-extensions-google-cloud-platform-core</artifactId>
-            <version>2.42.0</version>
+            <version>2.45.13</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>jcl-over-slf4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.beam</groupId>
             <artifactId>beam-runners-google-cloud-dataflow-java</artifactId>
-            <version>2.42.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.confluent</groupId>
+                    <artifactId>kafka-avro-serializer</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.confluent</groupId>
+                    <artifactId>kafka-schema-registry-client</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.beam</groupId>
+            <artifactId>beam-sdks-java-extensions-python</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.beam</groupId>
+            <artifactId>beam-sdks-java-io-hadoop-format</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.beam</groupId>
+            <artifactId>beam-sdks-java-extensions-google-cloud-platform-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.beam</groupId>
+            <artifactId>beam-sdks-java-expansion-service</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.beam</groupId>
@@ -116,17 +150,32 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>com.google.auto.value</groupId>
+            <artifactId>auto-value</artifactId>
+            <version>${autovalue.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.auto.value</groupId>
+            <artifactId>auto-value-annotations</artifactId>
+            <version>${autovalue.annotations.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.13.3</version>
             <exclusions>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jul-to-slf4j</artifactId>
                 </exclusion>
-                <exclusion>  <!-- declare the exclusion here -->
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-jdk14</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -144,58 +193,6 @@
 
         <pluginManagement>
             <plugins>
-
-                <!--
-                    The jib plugin provides the capability to containerize this application based on
-                    properties specified in the configuration without having to build a Dockerfile manually.
-                     Jib also integrates with the maven lifecycle and helps push the image to the repository
-                    specified in the configuration or via the command line.
-                        https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin
-                    -->
-                <plugin>
-                    <groupId>com.google.cloud.tools</groupId>
-                    <artifactId>jib-maven-plugin</artifactId>
-                    <version>${jib.maven.version}</version>
-                    <configuration>
-                        <from>
-                            <!--
-                            The Dataflow Template base image to use. This
-                             should not need to change unless we want to use the JDK11
-                             -->
-                            <image>${base-container-image}:${base-container-image.version}</image>
-                        </from>
-                        <container>
-                            <!--
-                            The root directory to use to expand the compiled classes and dependencies in. The
-                            Jib plugin  will create the following directories under this root:
-                              - resources: All the files under src/resources will be copied to this folder as-is.
-                              - libs: All dependency jars needed to execute this pipeline will be copied into this
-                                      folder.
-                              - classes: Compiled pipeline code will be copied into this folder.
-                            The libs and classes folders under appRoot should thus be added in the classpath
-                            defined in src/resources/command-spec.json.
-                            -->
-                            <appRoot>${app-root}</appRoot>
-                            <!--
-                            INHERIT the base containers entrypoint. Do not override or the Dataflow service
-                            will be unable to launch this template.
-                            -->
-                            <entrypoint>INHERIT</entrypoint>
-                            <environment>
-                                <!--
-                                Set an environment variable called DATAFLOW_JAVA_COMMAND_SPEC that points to the
-                                java-command-spec.json file inside the container. Note that since the Jib plugin
-                                copies the containers of src/resources/* to appRoot/resources, the value of this
-                                environment variable can be set here.
-                                -->
-                                <DATAFLOW_JAVA_COMMAND_SPEC>
-                                    ${command-spec}
-                                </DATAFLOW_JAVA_COMMAND_SPEC>
-                            </environment>
-                        </container>
-                    </configuration>
-
-                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
@@ -375,32 +372,11 @@
                 </executions>
             </plugin>
 
-
-            <plugin>
-                <!-- Set up Javadoc configuration for javadoc run via in the Maven
-                     build. Teleport only uses the plugin to create the individual javadoc
-                     attached artifacts used for IDEs. The combined javadoc for the
-                     website is built in the sdks/java/javadoc directory. Rather than
-                     duplicate a raft of configuration between the ant.xml there and
-                     here, we leave things simple here. -->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${maven-javadoc-plugin.version}</version>
-                <configuration>
-                    <windowtitle>Teleport for Java, version ${project.version} API</windowtitle>
-                    <doctitle>Teleport for Java, version ${project.version}</doctitle>
-                    <use>false</use>
-                    <quiet>true</quiet>
-                    <notimestamp>true</notimestamp>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>${maven-jar-plugin.version}</version>
             </plugin>
-
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -500,77 +476,14 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire.version}</version>
                 <configuration>
-                    <!-- Exclude Cloud Spanner integration tests that require a GCP project to run.
-                    They can be run run manually using
-                    TODO: Add support for emulator to run integration tests.
-                    'mvn -Dexcluded.spanner.tests="" -Dtest=<testname> test' -->
                     <systemProperties>
                         <property>
                             <name>nashorn.args</name>
                             <value>--no-deprecation-warning</value>
                         </property>
                     </systemProperties>
-                    <excludedGroups>${excluded.spanner.tests}</excludedGroups>
                 </configuration>
-            </plugin>
-
-            <!-- Keep this equivalent with ../pom.xml. Unfortunately, we need to duplicate the
-            plugin until we can fix errors introduced by adding v2 as a child module of the root
-            teleport module. -->
-            <plugin>
-                <groupId>com.diffplug.spotless</groupId>
-                <artifactId>spotless-maven-plugin</artifactId>
-                <version>${spotless-maven-plugin.version}</version>
-                <configuration>
-                    <formats>
-                        <!-- Avoid trailing whitespace and require ending newline. -->
-                        <format>
-                            <includes>
-                                <!-- .gitignore does not need to be included here. -->
-                                <include>*.md</include>
-                            </includes>
-                            <trimTrailingWhitespace/>
-                            <endWithNewline/>
-                        </format>
-                    </formats>
-                    <java>
-                        <toggleOffOn />
-                        <googleJavaFormat>
-                            <version>1.8</version>
-                            <style>GOOGLE</style>
-                        </googleJavaFormat>
-                        <licenseHeader>
-                            <file>JAVA_LICENSE_HEADER</file>
-                        </licenseHeader>
-                    </java>
-                </configuration>
-                <!-- Bind to verify. -->
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <!-- The following snapshot profile allows us to test teleport with
-             unreleased apache sw. E.g. to test with a snapshot version of beam we
-             could do
-                  mvn test -Psnapshot -Dbeam.version=A.B.C-SNAPSHOT
-          -->
-        <profile>
-            <id>snapshot</id>
-            <repositories>
-                <repository>
-                    <id>apache.snapshots</id>
-                    <url>https://repository.apache.org/content/repositories/snapshots</url>
-                </repository>
-            </repositories>
-        </profile>
-    </profiles>
-
 </project>

@@ -112,7 +112,7 @@ The template requires the following parameters:
 - `SObjectName` - Salesforce object to pull supported by CDAP Salesforce Streaming Source.
 - `pushTopicName` - name of the push topic that was created from query for some sObject. This push topic should have enabled *pushTopicNotifyCreate* property.
   If push topic with such name doesn't exist, then new push topic for provided **'sObjectName'** will be created automatically.
-- `outputTxtFilePathPrefix` - 
+- `outputTxtFilePathPrefix` - Path to output folder with filename prefix. It will write a set of .txt files with names like {prefix}-###.
 
 The template allows for the user to supply the following optional parameters:
 - `pullFrequencySec` - delay in seconds between polling for new records updates.

@@ -22,9 +22,13 @@ package com.akvelon.salesforce.transforms;
 import static org.apache.beam.sdk.util.Preconditions.checkStateNotNull;
 
 import com.akvelon.salesforce.utils.GetOffsetUtils;
+import io.cdap.cdap.api.data.schema.Schema;
+import io.cdap.plugin.salesforce.plugin.source.batch.SalesforceBatchSource;
+import io.cdap.plugin.salesforce.plugin.source.batch.SalesforceSourceConfig;
 import io.cdap.plugin.salesforce.plugin.source.streaming.SalesforceReceiver;
 import io.cdap.plugin.salesforce.plugin.source.streaming.SalesforceStreamingSource;
 import io.cdap.plugin.salesforce.plugin.source.streaming.SalesforceStreamingSourceConfig;
+import java.util.HashMap;
 import java.util.Map;
 import org.apache.beam.sdk.io.cdap.CdapIO;
 import org.apache.beam.sdk.io.cdap.ConfigWrapper;
@@ -33,6 +37,28 @@ import org.apache.hadoop.io.NullWritable;
 
 /** Different input transformations over the processed data in the pipeline. */
 public class FormatInputTransform {
+
+    /**
+     * Configures Cdap Salesforce Read transform.
+     *
+     * @param pluginConfigParams Cdap Salesforce plugin config parameters
+     * @return configured Read transform
+     */
+    @SuppressWarnings("rawtypes")
+    public static CdapIO.Read<Schema, HashMap> readFromCdapSalesforceBatch(
+            Map<String, Object> pluginConfigParams) {
+
+        final SalesforceSourceConfig pluginConfig =
+                new ConfigWrapper<>(SalesforceSourceConfig.class).withParams(pluginConfigParams).build();
+
+        checkStateNotNull(pluginConfig, "Plugin config can't be null.");
+
+        return CdapIO.<Schema, HashMap>read()
+                .withCdapPluginClass(SalesforceBatchSource.class)
+                .withPluginConfig(pluginConfig)
+                .withKeyClass(Schema.class)
+                .withValueClass(HashMap.class);
+    }
 
     /**
      * Configures Cdap Salesforce Streaming Read transform.
@@ -58,7 +84,7 @@ public class FormatInputTransform {
                         .withCdapPlugin(
                                 Plugin.createStreaming(
                                         SalesforceStreamingSource.class,
-                                        GetOffsetUtils.getOffsetFnForCdapPlugin(SalesforceStreamingSource.class),
+                                        GetOffsetUtils.getOffsetFnForSalesforce(),
                                         SalesforceReceiver.class,
                                         config -> {
                                             SalesforceStreamingSourceConfig salesforceConfig =

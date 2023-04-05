@@ -390,8 +390,8 @@
                     </dependency>
                 </dependencies>
                 <configuration>
-                    <configLocation>checkstyle/checkstyle.xml</configLocation>
-                    <suppressionsLocation>checkstyle/suppressions.xml</suppressionsLocation>
+                    <configLocation>../Common/checkstyle/checkstyle.xml</configLocation>
+                    <suppressionsLocation>../Common/checkstyle/suppressions.xml</suppressionsLocation>
                     <consoleOutput>true</consoleOutput>
                     <failOnViolation>true</failOnViolation>
                     <includeResources>false</includeResources>

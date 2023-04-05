@@ -219,7 +219,7 @@ on your project's [Container Registry](https://cloud.google.com/container-regist
 #### Prerequisites
 
 Multi-language Dataflow templates requires Python Expansion service.
-Additional information you can find here: TBD.
+Additional information you can find [here](../Dataflow/ML/runinference/anomaly_detection/README.md).
 
 #### Creating the Dataflow Flex Template
 

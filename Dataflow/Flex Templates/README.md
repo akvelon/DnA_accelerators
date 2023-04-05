@@ -30,8 +30,8 @@ mvn clean compile
 
 ## Template Pipelines
 
-* [Salesforce to Txt](salesforce-to-txt/src/main/java/com/akvelon/salesforce/templates/CdapSalesforceStreamingToTxt.java)
-* [Salesforce to BigQuery](salesforce-to-bigquery/src/main/java/com/akvelon/salesforce/templates/CdapRunInference.java)
+* [Salesforce to Txt](salesforce-to-txt)
+* [Salesforce to BigQuery](salesforce-to-bigquery)
 
 ## Contact Us
 

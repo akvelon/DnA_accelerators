@@ -42,7 +42,6 @@ import static com.akvelon.salesforce.utils.SalesforceConstants.TYPE;
 import static com.akvelon.salesforce.utils.VaultUtils.getSalesforceCredentialsFromVault;
 
 import com.akvelon.salesforce.options.CdapSalesforceStreamingMLSourceOptions;
-import com.akvelon.salesforce.options.CdapSalesforceStreamingSourceOptions;
 import com.akvelon.salesforce.transforms.BigQueryErrorTransform;
 import com.akvelon.salesforce.transforms.FormatInputTransform;
 import com.akvelon.salesforce.utils.FailsafeRecord;

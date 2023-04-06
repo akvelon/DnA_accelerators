@@ -1,7 +1,7 @@
 # Maven build files
 **/bin/**/*
 **/dependency-reduced-pom.xml
-salesforce-to-txt/target/classes/com/akvelon/salesforce/utils
+**/target/**/*
 
 # IntelliJ files
 **/.idea/**/*

@@ -14,7 +14,7 @@ Repo contains all the images for deploying the service and also a training pipel
 
 Model folders:
 
-* `anomaly_detection` - PyTorch/Sklearn pipeline for detecting anomalies within Amount spent
-* `tfx_regression` - TFX-based regression for predicting days of opportunity being open
+* `pytorch/anomaly_detection` - PyTorch/Sklearn pipeline for detecting anomalies within Amount spent
+* `tfx/regression` - TFX-based regression for predicting days of opportunity being open
 
 Please refer to these directories for more info.

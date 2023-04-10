@@ -12,8 +12,6 @@ Repo contains all the images for deploying the service and also a training pipel
 
 ### Structure
 
-`data` holds the .csv with salesforce exported data
-
 Model folders:
 
 * `anomaly_detection` - PyTorch/Sklearn pipeline for detecting anomalies within Amount spent

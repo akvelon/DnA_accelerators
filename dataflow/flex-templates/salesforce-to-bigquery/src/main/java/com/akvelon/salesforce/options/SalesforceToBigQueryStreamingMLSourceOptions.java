@@ -4,10 +4,10 @@ import org.apache.beam.sdk.options.Default;
 import org.apache.beam.sdk.options.Description;
 
 /**
- * The {@link CdapSalesforceStreamingSourceOptions} interface provides the custom execution options passed by the
+ * The {@link SalesforceToBigQueryStreamingSourceOptions} interface provides the custom execution options passed by the
  * executor at the command-line for example with multi-language (Java + Python ML) Cdap Salesforce plugins.
  */
-public interface CdapSalesforceStreamingMLSourceOptions extends CdapSalesforceStreamingSourceOptions {
+public interface SalesforceToBigQueryStreamingMLSourceOptions extends SalesforceToBigQueryStreamingSourceOptions {
 
     //Python
 

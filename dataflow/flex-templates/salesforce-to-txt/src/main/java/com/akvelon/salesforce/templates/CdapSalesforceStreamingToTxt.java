@@ -21,7 +21,7 @@ package com.akvelon.salesforce.templates;
 
 import static com.akvelon.salesforce.utils.VaultUtils.getSalesforceCredentialsFromVault;
 
-import com.akvelon.salesforce.options.CdapSalesforceStreamingSourceOptions;
+import com.akvelon.salesforce.options.SalesforceToTxtStreamingSourceOptions;
 import com.akvelon.salesforce.transforms.FormatInputTransform;
 import com.akvelon.salesforce.utils.PluginConfigOptionsConverter;
 import io.cdap.plugin.salesforce.SalesforceConstants;
@@ -107,10 +107,10 @@ public class CdapSalesforceStreamingToTxt {
      * @param args Command line arguments to the pipeline.
      */
     public static void main(String[] args) {
-        CdapSalesforceStreamingSourceOptions options =
+        SalesforceToTxtStreamingSourceOptions options =
                 PipelineOptionsFactory.fromArgs(args)
                         .withValidation()
-                        .as(CdapSalesforceStreamingSourceOptions.class);
+                        .as(SalesforceToTxtStreamingSourceOptions.class);
 
         // Create the pipeline
         Pipeline pipeline = Pipeline.create(options);
@@ -123,7 +123,7 @@ public class CdapSalesforceStreamingToTxt {
      * @param options arguments to the pipeline
      */
     public static PipelineResult run(
-            Pipeline pipeline, CdapSalesforceStreamingSourceOptions options) {
+            Pipeline pipeline, SalesforceToTxtStreamingSourceOptions options) {
         if (options.getSecretStoreUrl() != null && options.getVaultToken() != null) {
             Map<String, String> credentials =
                     getSalesforceCredentialsFromVault(options.getSecretStoreUrl(), options.getVaultToken());

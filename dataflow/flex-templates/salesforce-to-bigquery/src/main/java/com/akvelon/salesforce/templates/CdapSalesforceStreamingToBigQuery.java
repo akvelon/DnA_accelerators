@@ -23,7 +23,7 @@ import static com.akvelon.salesforce.utils.BigQueryConstants.DEADLETTER_SCHEMA;
 import static com.akvelon.salesforce.utils.BigQueryConstants.DEFAULT_DEADLETTER_TABLE_SUFFIX;
 import static com.akvelon.salesforce.utils.VaultUtils.getSalesforceCredentialsFromVault;
 
-import com.akvelon.salesforce.options.CdapSalesforceStreamingSourceOptions;
+import com.akvelon.salesforce.options.SalesforceToBigQueryStreamingSourceOptions;
 import com.akvelon.salesforce.transforms.BigQueryErrorTransform;
 import com.akvelon.salesforce.transforms.FormatInputTransform;
 import com.akvelon.salesforce.utils.FailsafeRecord;
@@ -135,10 +135,10 @@ public class CdapSalesforceStreamingToBigQuery {
      * @param args Command line arguments to the pipeline.
      */
     public static void main(String[] args) {
-        CdapSalesforceStreamingSourceOptions options =
+        SalesforceToBigQueryStreamingSourceOptions options =
                 PipelineOptionsFactory.fromArgs(args)
                         .withValidation()
-                        .as(CdapSalesforceStreamingSourceOptions.class);
+                        .as(SalesforceToBigQueryStreamingSourceOptions.class);
 
         // Create the pipeline
         Pipeline pipeline = Pipeline.create(options);
@@ -160,7 +160,7 @@ public class CdapSalesforceStreamingToBigQuery {
      * @param options arguments to the pipeline
      */
     public static void run(
-            Pipeline pipeline, CdapSalesforceStreamingSourceOptions options) {
+            Pipeline pipeline, SalesforceToBigQueryStreamingSourceOptions options) {
         if (options.getSecretStoreUrl() != null && options.getVaultToken() != null) {
             Map<String, String> credentials =
                     getSalesforceCredentialsFromVault(options.getSecretStoreUrl(), options.getVaultToken());

@@ -26,6 +26,7 @@
     <modules>
         <module>salesforce-to-txt</module>
         <module>salesforce-to-bigquery</module>
+        <module>salesforce-common</module>
     </modules>
 
     <properties>

@@ -58,7 +58,7 @@ public class FormatInputTransform {
                         .withCdapPlugin(
                                 Plugin.createStreaming(
                                         SalesforceStreamingSource.class,
-                                        GetOffsetUtils.getOffsetFnForCdapPlugin(SalesforceStreamingSource.class),
+                                        GetOffsetUtils.getOffsetFnForSalesforce(),
                                         SalesforceReceiver.class,
                                         config -> {
                                             SalesforceStreamingSourceConfig salesforceConfig =

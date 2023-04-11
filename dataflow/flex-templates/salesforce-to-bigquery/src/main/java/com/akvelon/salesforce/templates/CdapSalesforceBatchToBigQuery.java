@@ -19,7 +19,7 @@
  */
 package com.akvelon.salesforce.templates;
 
-import com.akvelon.salesforce.options.CdapSalesforceBatchSourceOptions;
+import com.akvelon.salesforce.options.SalesforceToBigQueryBatchSourceOptions;
 import com.akvelon.salesforce.transforms.FormatInputTransform;
 import com.akvelon.salesforce.utils.PluginConfigOptionsConverter;
 import com.google.api.services.bigquery.model.TableRow;
@@ -65,10 +65,10 @@ public class CdapSalesforceBatchToBigQuery {
      * @param args Command line arguments to the pipeline.
      */
     public static void main(String[] args) {
-        CdapSalesforceBatchSourceOptions options =
+        SalesforceToBigQueryBatchSourceOptions options =
                 PipelineOptionsFactory.fromArgs(args)
                         .withValidation()
-                        .as(CdapSalesforceBatchSourceOptions.class);
+                        .as(SalesforceToBigQueryBatchSourceOptions.class);
 
         // Create the pipeline
         Pipeline pipeline = Pipeline.create(options);
@@ -80,7 +80,7 @@ public class CdapSalesforceBatchToBigQuery {
      *
      * @param options arguments to the pipeline
      */
-    public static PipelineResult run(Pipeline pipeline, CdapSalesforceBatchSourceOptions options) {
+    public static PipelineResult run(Pipeline pipeline, SalesforceToBigQueryBatchSourceOptions options) {
         Map<String, Object> paramsMap =
                 PluginConfigOptionsConverter.salesforceBatchSourceOptionsToParamsMap(options);
         LOG.info("Starting Cdap-Salesforce pipeline with parameters: {}", paramsMap);

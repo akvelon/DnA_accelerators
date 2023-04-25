@@ -18,30 +18,32 @@ This section describes what is needed to run precompiled template that already b
 - How to create and run Dataflow job from Flex Template
 
 #### Artifacts
+Dataflow template json
+<br> TBD
+ 
+[Expansion service](https://hub.docker.com/layers/akvelon/dna-accelerator/expansion-service/images/sha256-045986791106f035993819d3ff3b66ac182489a45c14eba78c6f5077ff11910f?context=explore) image
+```
+docker pull akvelon/dna-accelerator:expansion-service
+```
 
-TBD
+[Template launcher](https://hub.docker.com/layers/akvelon/dna-accelerator/template-launcher/images/sha256-ec1ba066d40a9b2dc6b7fe82dccbbfdc2d8cfed4664a501332bc35e48a5045f2?context=explore) image
+```
+docker pull akvelon/dna-accelerator:template-launcher
+```
 
 #### Template parameters
 
 TBD
 
 #### Run Dataflow job
+Upload Dataflow template json to GCP storage and follow [Running templates documentation](https://cloud.google.com/dataflow/docs/guides/templates/running-templates) setting all [template parameters](#template-parameters)
 
-TBD
-
-## How to build and run templates
+## How to build templates
 
 This section describes how to build and run one of the available templates in this repository.
 You should follow:
 1. First steps paragraph.
 2. Building particular template paragraph.
-3. Executing template paragraph.
-
-### Available template pipelines
-
-- [Salesforce to BigQuery Batch template](src/main/java/com/akvelon/salesforce/templates/CdapSalesforceBatchToBigQuery.java)
-- [Salesforce to BigQuery Streaming template](src/main/java/com/akvelon/salesforce/templates/CdapSalesforceStreamingToBigQuery.java)
-- [Salesforce to BigQuery Streaming multi-language (Java + Python ML) template](src/main/java/com/akvelon/salesforce/templates/CdapRunInference.java)
 
 ### First steps
 
@@ -95,6 +97,14 @@ both target package *and* all its dependencies.
 
 The result of the `package` task execution is a `salesforce-to-bigquery-1.0-SNAPSHOT.jar`
 file that is generated under the `target` folder in salesforce-to-bigquery directory.
+
+Then follow one of instructions for building particular template:
+#### Available template pipelines
+
+- [Salesforce to BigQuery Batch template](src/main/java/com/akvelon/salesforce/templates/CdapSalesforceBatchToBigQuery.java)
+- [Salesforce to BigQuery Streaming template](src/main/java/com/akvelon/salesforce/templates/CdapSalesforceStreamingToBigQuery.java)
+- [Salesforce to BigQuery Streaming multi-language (Java + Python ML) template](src/main/java/com/akvelon/salesforce/templates/CdapRunInference.java)
+
 
 ### Build Salesforce to BigQuery Batch template
 
@@ -153,6 +163,8 @@ You can provide the next secured parameters directly instead of providing HashiC
 - `consumerKey` - Salesforce connected app's consumer key.
 - `consumerSecret` - Salesforce connected app's consumer secret.
 
+To run the template follow [How to run template instruction](#how-to-run-template)
+
 ### Build Salesforce to BigQuery Streaming template
 
 Dataflow Flex Templates package the pipeline as a Docker image and stage these images
@@ -209,7 +221,9 @@ You can provide the next secured parameters directly instead of providing HashiC
 - `password` - Salesforce user password.
 - `securityToken` - Salesforce security token.
 - `consumerKey` - Salesforce connected app's consumer key.
-- `consumerSecret` - Salesforce connected app's consumer secret.
+- `consumerSecret` - Salesforce connected app's consumer secret. 
+
+To run the template follow [How to run template instruction](#how-to-run-template)
 
 ### Build Salesforce to BigQuery Streaming multi-language (Java + Python ML) template
 
@@ -302,7 +316,7 @@ You can provide the next secured parameters directly instead of providing HashiC
 - `consumerKey` - Salesforce connected app's consumer key.
 - `consumerSecret` - Salesforce connected app's consumer secret.
 
-### Executing template
+## How to run template
 
 You can execute template in 3 different ways:
 1. Using [Dataflow Google Cloud Console](https://console.cloud.google.com/dataflow/jobs)

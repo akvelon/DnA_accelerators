@@ -1,15 +1,8 @@
-# DnA_accelerators
+# Flex Templates for Google Cloud Dataflow
 
-These Dataflow templates are an effort to solve simple, but large, in-Cloud data
-tasks, including data import/export/backup/restore and bulk API operations,
-without a development environment. The technology under the hood which makes
-these operations possible is the
-[Google Cloud Dataflow](https://cloud.google.com/dataflow/) service combined
-with a set of [Apache Beam](https://beam.apache.org/) SDK templated pipelines.
+Google Cloud Dataflow [Flex Templates](https://cloud.google.com/dataflow/docs/concepts/dataflow-templates) are a powerful way to build and run data pipelines on Google Cloud Platform. With [Flex Templates](https://cloud.google.com/dataflow/docs/guides/templates/using-flex-templates), you can package your pipeline code and dependencies as a Docker image, and then run it on Dataflow with just a few clicks. This makes it easy to build and deploy complex pipelines quickly and reliably.
 
-Akvelon is providing this collection of pre-implemented Dataflow templates as a
-reference and to provide easy customization for developers wanting to extend
-their functionality.
+[Akvelon, a Google Cloud Partner](https://cloud.google.com/find-a-partner/partner/akvelon), is providing this open-source collection of Dataflow Flex templates as a reference and easy customizations for developers looking to build streaming, batch, multilanguage data pipelines with ML processing in Google Cloud Dataflow.
 
 [![Open in Cloud Shell](http://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Fakvelon%2FDnA_accelerators.git)
 
@@ -29,11 +22,15 @@ mvn clean compile
 ```
 
 ## Template Pipelines
-
-* [Salesforce to Txt](salesforce-to-txt)
-* [Salesforce to BigQuery](salesforce-to-bigquery)
+* [Salesforce to Txt](salesforce-to-txt) - Flex templates for batch and streaming Salesforce data processing with Google Cloud Dataflow, using Apache Beam [CDAP IO](https://beam.apache.org/documentation/io/built-in/cdap/).
+* [Salesforce to BigQuery](salesforce-to-bigquery) - Flex templates for batch and streaming Salesforce data processing with Google Cloud Dataflow and BigQuery, using Apache Beam [CDAP IO](https://beam.apache.org/documentation/io/built-in/cdap/). Flex templates provide a comprehensive example of using Machine Learning (ML) to process streaming data in Dataflow, using Java multilanguage pipeline with Python transforms to run custom TFX and PyTorch [ML models](https://github.com/akvelon/DnA_accelerators/tree/dev/dataflow/ml/salesforce). This complete Flex template example also demonstrates creating and setting up [Expansion Service](https://beam.apache.org/documentation/programming-guide/#multi-language-pipelines) in Dataflow to enable running custom Python transforms within a Java pipeline.
 
 ## Contact Us
+[Akvelon](https://akvelon.com/data-analitycs/) is a digital product and software engineering company that empowers strategic advantage and accelerates your path to value in Data and Analytics, AI/ML, MLOps, Application development, and more with innovation and predictable delivery.
 
-* [Get in touch with us](https://akvelon.com/contact-us/).
-* [Report an issue](https://github.com/akvelon/DnA_accelerators/issues).
+* [Get in touch about Data and Analytics and Data Migrations projects](https://akvelon.com/contact-us/).
+* [Get in touch about ML projects](https://akvelon.com/contact-us/). 
+* [Get in touch about Google Cloud projects](https://akvelon.com/contact-us/).
+* [Request a feature](https://akvelon.com/contact-us/).
+* [Report an issue](https://github.com/akvelon/DnA_accelerators/issues). 
+

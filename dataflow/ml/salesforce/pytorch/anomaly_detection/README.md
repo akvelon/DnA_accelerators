@@ -21,8 +21,6 @@ packed into a custom PTransform that is hosted on expansion service.
 Expansion service image must be supplied with all the dependencies that are used in Python part of the pipeline. If these imports are available in `pip`,
 we can include them directly in `Dockerfile`, otherwise we can copy the package source to the image and install it directly with `setup.py`.
 
-To start an expansion service for loading custom PTransform with RunInference, you need to:
-
 ### Pipeline
 
 All the stuff needed to run the service locally or on cloud is located in `./pipeline`:
@@ -31,6 +29,8 @@ All the stuff needed to run the service locally or on cloud is located in `./pip
 
 Original implementation of expansion service used by runner can't be used on a remote machine due to `localhost` set as
 listening address. Instead, we already modified the original implementation of the service to make it available for remote connection.
+
+To start an expansion service for loading custom PTransform with RunInference, you need to:
 
 1. Start a cloud compute instance with at least 25 GB of boot disk. Port 8088 must be open for incoming connections.
 2. (Optional) Build and test the image locally: `docker build ./pipeline -t exp_service_test` then `docker run -p 8088:8088 exp_service_test`

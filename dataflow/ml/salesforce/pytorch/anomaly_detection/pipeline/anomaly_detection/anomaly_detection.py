@@ -27,7 +27,8 @@ from autoembedder import Autoembedder
 from apache_beam.io.filesystems import FileSystems
 from apache_beam.ml.inference.base import RunInference, PredictionResult, KeyedModelHandler
 from apache_beam.ml.inference.sklearn_inference import SklearnModelHandlerNumpy, ModelFileType
-from apache_beam.ml.inference.pytorch_inference import PytorchModelHandlerTensor, _convert_to_result
+from apache_beam.ml.inference.pytorch_inference import PytorchModelHandlerTensor
+from apache_beam.ml.inference.utils import _convert_to_result
 
 
 class CustomSklearnModelHandlerNumpy(SklearnModelHandlerNumpy):
@@ -37,7 +38,6 @@ class CustomSklearnModelHandlerNumpy(SklearnModelHandlerNumpy):
 
 
 class CustomPytorchModelHandlerTensor(PytorchModelHandlerTensor):
-
     def run_inference(self, batch, model, inference_args=None):
         with torch.no_grad():
             list_of_cont_tensors = []

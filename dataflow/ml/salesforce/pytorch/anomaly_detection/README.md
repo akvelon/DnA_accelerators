@@ -5,7 +5,8 @@ Python and Apache Beam.
 
 The task is to detect anomaly within the data based on the input values.
 In our example we use [autoembedder](https://github.com/chrislemke/autoembedder) to train the encoder and [hdbscan](https://hdbscan.readthedocs.io/)
-clustering model for detecting the anomalies on processed data.
+clustering model for detecting the anomalies on processed data. We use [RunInference](https://beam.apache.org/documentation/transforms/python/elementwise/runinference/) to wrap the models and add them in custom
+Beam PTransform.
 
 All the steps are performed on Apache Beam using Python API. 
 You can check out train and test by running the Jupyter Notebooks:
@@ -31,7 +32,14 @@ packed into a custom PTransform that is hosted on expansion service.
 Expansion service image must be supplied with all the dependencies that are used in Python part of the pipeline. If these imports are available in `pip`,
 we can include them directly in `Dockerfile`, otherwise we can copy the package source to the image and install it directly with `setup.py`.
 
-In our example we pack everything we need in expansion service in a `Dockefile` and then deploy in on a remote host.
+In our example we use both `pip` to collect the required packages and our module `setup.py` in [Dockerfile](./pipeline/Dockerfile) to build expansion service and then deploy in on a remote host.
+
+By default, the implementation of the expansion service used by runner doesn't support remote connections thus working only for a pipeline on the same machine.
+Our packed pipeline image includes modified version of the service with allowed outside connections from any address (`0.0.0.0`) to the container.
+
+You can find the original implementation of expansion service here:
+
+https://github.com/apache/beam/blob/master/sdks/python/apache_beam/runners/portability/expansion_service_main.py
 
 ### Pipeline
 
@@ -39,8 +47,7 @@ All the files that are needed to run the service locally or on cloud are located
 
 `setup.py` and `./anomaly_detection` directory are used to install the custom transform in docker image and also hold the main pipeline code.
 
-Original implementation of expansion service used by runner can't be used on a remote machine due to `localhost` set as
-listening address. Instead, we already modified the original implementation of the service to make it available for remote connection.
+
 
 To start an expansion service for loading custom PTransform with RunInference, you need to:
 

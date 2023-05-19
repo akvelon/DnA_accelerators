@@ -17,19 +17,19 @@ public interface SalesforceToBigQueryStreamingMLSourceOptions extends Salesforce
     void setExpansionService(String expansionService);
 
     @Description("Model URI for Python ML RunInference")
-    @Default.String("gs://salesforce-example/anomaly-detection/anomaly_detection.model")
+    @Default.String("gs://salesforce-pipelines/anomaly-detection/anomaly_detection.model")
     String getModelUri();
 
     void setModelUri(String modelUri);
 
     @Description("Encoder URI for Python ML RunInference")
-    @Default.String("gs://salesforce-example/anomaly-detection/encoder.pth")
+    @Default.String("gs://salesforce-pipelines/anomaly-detection/encoder.pth")
     String getEncoderUri();
 
     void setEncoderUri(String encoderUri);
 
     @Description("Model params URI for Python ML RunInference")
-    @Default.String("gs://salesforce-example/anomaly-detection/model.params")
+    @Default.String("gs://salesforce-pipelines/anomaly-detection/model.params")
     String getParamsUri();
 
     void setParamsUri(String paramsUri);

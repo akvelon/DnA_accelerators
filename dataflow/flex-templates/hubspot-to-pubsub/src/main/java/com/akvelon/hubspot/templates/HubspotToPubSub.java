@@ -19,8 +19,9 @@
  */
 package com.akvelon.hubspot.templates;
 
-import com.akvelon.hubspot.options.CdapHubspotSourceOptions;
+import com.akvelon.hubspot.options.CdapHubspotOptions;
 import com.akvelon.hubspot.transforms.FormatInputTransform;
+import com.akvelon.hubspot.transforms.FormatOutputTransform;
 import com.akvelon.hubspot.utils.JsonElementCoder;
 import com.akvelon.hubspot.utils.PluginConfigOptionsConverter;
 import com.google.gson.JsonElement;
@@ -30,7 +31,6 @@ import org.apache.beam.sdk.PipelineResult;
 import org.apache.beam.sdk.coders.KvCoder;
 import org.apache.beam.sdk.coders.NullableCoder;
 import org.apache.beam.sdk.coders.StringUtf8Coder;
-import org.apache.beam.sdk.io.gcp.pubsub.PubsubIO;
 import org.apache.beam.sdk.io.hadoop.WritableCoder;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.transforms.MapValues;
@@ -53,17 +53,17 @@ public class HubspotToPubSub {
      * @param args Command line arguments to the pipeline.
      */
     public static void main(String[] args) {
-        CdapHubspotSourceOptions options =
-                PipelineOptionsFactory.fromArgs(args).withValidation().as(CdapHubspotSourceOptions.class);
+        CdapHubspotOptions options =
+                PipelineOptionsFactory.fromArgs(args).withValidation().as(CdapHubspotOptions.class);
 
         // Create the pipeline
         Pipeline pipeline = Pipeline.create(options);
         run(pipeline, options);
     }
 
-    public static PipelineResult run(Pipeline pipeline, CdapHubspotSourceOptions options) {
+    public static PipelineResult run(Pipeline pipeline, CdapHubspotOptions options) {
         Map<String, Object> paramsMap = PluginConfigOptionsConverter.hubspotOptionsToParamsMap(options);
-        LOG.info("Starting Cdap-Hubspot-to-txt pipeline with parameters: {}", paramsMap);
+        LOG.info("Starting Cdap-Hubspot-to-pubsub pipeline with parameters: {}", paramsMap);
 
         /*
          * Steps:
@@ -91,7 +91,7 @@ public class HubspotToPubSub {
                         KvCoder.of(
                                 NullableCoder.of(WritableCoder.of(NullWritable.class)), StringUtf8Coder.of()))
                 .apply(Values.create())
-                .apply("writeToPubSub", PubsubIO.writeStrings().to(options.getOutputTopic()));
+                .apply("writeToPubSub", new FormatOutputTransform.FormatOutput(options));
 
         return pipeline.run();
     }

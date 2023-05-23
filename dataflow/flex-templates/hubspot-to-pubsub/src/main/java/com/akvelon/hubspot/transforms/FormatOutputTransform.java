@@ -19,12 +19,22 @@ package com.akvelon.hubspot.transforms;
 
 import static org.apache.beam.sdk.util.Preconditions.checkStateNotNull;
 
+import com.akvelon.hubspot.options.CdapHubspotOptions;
 import io.cdap.cdap.api.plugin.PluginConfig;
 import io.cdap.plugin.hubspot.sink.batch.HubspotBatchSink;
 import io.cdap.plugin.hubspot.sink.batch.SinkHubspotConfig;
 import java.util.Map;
 import org.apache.beam.sdk.io.cdap.CdapIO;
 import org.apache.beam.sdk.io.cdap.ConfigWrapper;
+import org.apache.beam.sdk.io.gcp.pubsub.PubsubIO;
+import org.apache.beam.sdk.io.gcp.pubsub.PubsubMessage;
+import org.apache.beam.sdk.transforms.MapElements;
+import org.apache.beam.sdk.transforms.PTransform;
+import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.sdk.values.PDone;
+import org.apache.beam.sdk.values.TypeDescriptor;
+import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.base.Charsets;
+import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.io.NullWritable;
 
 /** Different output transformations over the processed data in the pipeline. */
@@ -49,5 +59,30 @@ public class FormatOutputTransform {
         .withKeyClass(NullWritable.class)
         .withValueClass(String.class)
         .withLocksDirPath(locksDirPath);
+  }
+  /**
+   * The {@link FormatOutput} wraps a String serializable messages with the {@link PubsubMessage}
+   * class.
+   */
+  public static class FormatOutput extends PTransform<PCollection<String>, PDone> {
+
+    private final CdapHubspotOptions options;
+
+    public FormatOutput(CdapHubspotOptions options) {
+      this.options = options;
+    }
+
+    @Override
+    public PDone expand(PCollection<String> input) {
+      return input
+              .apply(
+                      "convertMessagesToPubsubMessages",
+                      MapElements.into(TypeDescriptor.of(PubsubMessage.class))
+                              .via(
+                                      (String json) ->
+                                              new PubsubMessage(json.getBytes(Charsets.UTF_8), ImmutableMap.of())))
+              .apply(
+                      "writePubsubMessagesToPubSub", PubsubIO.writeMessages().to(options.getOutputTopic()));
+    }
   }
 }

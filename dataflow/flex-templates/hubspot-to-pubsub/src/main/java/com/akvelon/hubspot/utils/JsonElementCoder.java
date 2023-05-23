@@ -44,6 +44,7 @@ public class JsonElementCoder extends CustomCoder<JsonElement> {
 
   @Override
   public JsonElement decode(@NonNull InputStream inStream) throws IOException {
-    return JsonParser.parseString(STRING_CODER.decode(inStream));
+    JsonParser jsonParser = new JsonParser();
+    return jsonParser.parse(STRING_CODER.decode(inStream));
   }
 }

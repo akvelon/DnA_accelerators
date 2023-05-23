@@ -17,6 +17,7 @@
  */
 package com.akvelon.hubspot.options;
 
+
 import org.apache.beam.sdk.options.Description;
 import org.apache.beam.sdk.options.Validation;
 
@@ -25,12 +26,11 @@ import org.apache.beam.sdk.options.Validation;
  * the executor at the command-line for Cdap Hubspot Source examples.
  */
 public interface CdapHubspotSourceOptions extends CdapHubspotOptions {
+    @Validation.Required
+    @Description(
+            "Output .txt file path with file name prefix."
+                    + "It will write a set of files with names like {prefix}-###.")
+    String getOutputTxtFilePathPrefix();
 
-  @Validation.Required
-  @Description(
-      "Output .txt file path with file name prefix."
-          + "It will write a set of files with names like {prefix}-###.")
-  String getOutputTxtFilePathPrefix();
-
-  void setOutputTxtFilePathPrefix(String outputTxtFilePathPrefix);
+    void setOutputTxtFilePathPrefix(String outputTxtFilePathPrefix);
 }

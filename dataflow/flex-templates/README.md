@@ -15,10 +15,14 @@ Google Cloud Dataflow [Flex Templates](https://cloud.google.com/dataflow/docs/co
 
 ### Building the Project
 
-Build the entire project using the maven compile command.
+Run [install-dependencies.sh](../dependencies/install-dependencies.sh) script for installing Maven dependencies.
+1. Right-click the intall-dependencies.sh file
+2. "Run 'install-dependencies...'"
+
+Build the entire project using the maven package command.
 
 ```sh
-mvn clean compile
+mvn clean package
 ```
 
 ## Template Pipelines

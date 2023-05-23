@@ -48,10 +48,6 @@ You should follow:
 
 ### First steps
 
-#### Install dependencies
-
-Run [install-dependencies.sh](../dependencies/install-dependencies.sh) script for installing Maven dependencies.
-
 #### Setting up pipeline variables:
 
 ```

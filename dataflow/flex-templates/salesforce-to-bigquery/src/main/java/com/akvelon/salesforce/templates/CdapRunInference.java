@@ -155,6 +155,7 @@ public class CdapRunInference {
                     NullableCoder.of(StringUtf8Coder.of()), NullableCoder.of(StringUtf8Coder.of()));
 
     public static final String ANOMALY_DETECTION_TRANFORM = "anomaly_detection.AnomalyDetection";
+    private static final String DEFAULT_PYTHON_SDK_OVERRIDES = "apache/beam_python3.9_sdk:2.47.0,docker.io/akvelon/dna-accelerator:expansion-service-2.47-SDK";
 
     /**
      * Main entry point for pipeline execution.
@@ -166,6 +167,8 @@ public class CdapRunInference {
                 PipelineOptionsFactory.fromArgs(args)
                         .withValidation()
                         .as(SalesforceToBigQueryStreamingMLSourceOptions.class);
+
+        options.setSdkHarnessContainerImageOverrides(DEFAULT_PYTHON_SDK_OVERRIDES);
 
         // Create the pipeline
         Pipeline pipeline = Pipeline.create(options);

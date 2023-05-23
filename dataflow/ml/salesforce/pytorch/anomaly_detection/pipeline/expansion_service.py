@@ -37,41 +37,40 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def main(argv):
-  parser = argparse.ArgumentParser()
-  parser.add_argument(
-      '-p', '--port', type=int, help='port on which to serve the job api')
-  parser.add_argument('--fully_qualified_name_glob', default=None)
-  known_args, pipeline_args = parser.parse_known_args(argv)
-  pipeline_options = PipelineOptions(
-      pipeline_args + ["--experiments=beam_fn_api", "--sdk_location=container"])
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-p', '--port', type=int, help='port on which to serve the job api')
+    parser.add_argument('--fully_qualified_name_glob', default=None)
+    known_args, pipeline_args = parser.parse_known_args(argv)
+    pipeline_options = PipelineOptions(
+        pipeline_args + ["--experiments=beam_fn_api", "--sdk_location=container"])
 
-  pickler.set_library(pipeline_options.view_as(SetupOptions).pickle_library)
+    pickler.set_library(pipeline_options.view_as(SetupOptions).pickle_library)
 
-  with fully_qualified_named_transform.FullyQualifiedNamedTransform.with_filter(
-      known_args.fully_qualified_name_glob):
+    with fully_qualified_named_transform.FullyQualifiedNamedTransform.with_filter(
+            known_args.fully_qualified_name_glob):
+        server = grpc.server(thread_pool_executor.shared_unbounded_instance())
+        beam_expansion_api_pb2_grpc.add_ExpansionServiceServicer_to_server(
+            expansion_service.ExpansionServiceServicer(pipeline_options), server)
+        beam_artifact_api_pb2_grpc.add_ArtifactRetrievalServiceServicer_to_server(
+            artifact_service.ArtifactRetrievalService(
+                artifact_service.BeamFilesystemHandler(None).file_reader),
+            server)
+        # We changed from localhost here
+        server.add_insecure_port('0.0.0.0:{}'.format(known_args.port))
+        server.start()
+        _LOGGER.info('Listening for expansion requests at %d', known_args.port)
 
-    server = grpc.server(thread_pool_executor.shared_unbounded_instance())
-    beam_expansion_api_pb2_grpc.add_ExpansionServiceServicer_to_server(
-        expansion_service.ExpansionServiceServicer(pipeline_options), server)
-    beam_artifact_api_pb2_grpc.add_ArtifactRetrievalServiceServicer_to_server(
-        artifact_service.ArtifactRetrievalService(
-            artifact_service.BeamFilesystemHandler(None).file_reader),
-        server)
-    # We changed from localhost here
-    server.add_insecure_port('0.0.0.0:{}'.format(known_args.port))
-    server.start()
-    _LOGGER.info('Listening for expansion requests at %d', known_args.port)
+        def cleanup(unused_signum, unused_frame):
+            _LOGGER.info('Shutting down expansion service.')
+            server.stop(None)
 
-    def cleanup(unused_signum, unused_frame):
-      _LOGGER.info('Shutting down expansion service.')
-      server.stop(None)
-
-    signal.signal(signal.SIGTERM, cleanup)
-    signal.signal(signal.SIGINT, cleanup)
-    # blocking main thread forever.
-    signal.pause()
+        signal.signal(signal.SIGTERM, cleanup)
+        signal.signal(signal.SIGINT, cleanup)
+        # blocking main thread forever.
+        signal.pause()
 
 
 if __name__ == '__main__':
-  logging.getLogger().setLevel(logging.INFO)
-  main(sys.argv)
+    logging.getLogger().setLevel(logging.INFO)
+    main(sys.argv)

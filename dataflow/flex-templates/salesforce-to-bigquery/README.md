@@ -6,6 +6,7 @@ to read data from a [Cdap Salesforce Streaming plugin](https://github.com/data-i
 ## Requirements
 
 - Java 8
+- Maven 3.8
 - Salesforce account with data
 - BigQuery table for output
 - Hashicorp Vault (Optional)
@@ -46,6 +47,10 @@ You should follow:
 2. Building particular template paragraph.
 
 ### First steps
+
+#### Install dependencies
+
+Run [install-dependencies.sh](../dependencies/install-dependencies.sh) script for installing Maven dependencies.
 
 #### Setting up pipeline variables:
 

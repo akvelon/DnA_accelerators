@@ -1,0 +1,15 @@
+torch
+autoembedder
+hdbscan
+category-encoders
+apache-beam[gcp]
+
+jupyter
+jupyter-console
+jupyter-events
+jupyter_client
+jupyter_core
+jupyter_server
+jupyter_server_terminals
+jupyterlab-pygments
+jupyterlab-widgets

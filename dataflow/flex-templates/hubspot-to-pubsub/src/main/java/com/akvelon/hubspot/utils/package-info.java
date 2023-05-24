@@ -18,5 +18,5 @@
  * limitations under the License.
  */
 
-/** Cdap Salesforce template. */
+/** Cdap Hubspot template. */
 package com.akvelon.hubspot.utils;

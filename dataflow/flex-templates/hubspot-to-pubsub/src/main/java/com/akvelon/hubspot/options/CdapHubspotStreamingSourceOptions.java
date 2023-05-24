@@ -20,7 +20,7 @@ package com.akvelon.hubspot.options;
 import org.apache.beam.sdk.options.Description;
 
 /**
- * The {@link CdapHubspotSourceOptions} interface provides the custom execution options passed by
+ * The {@link CdapHubspotOptions} interface provides the custom execution options passed by
  * the executor at the command-line for Cdap Hubspot Source examples.
  */
 public interface CdapHubspotStreamingSourceOptions extends CdapHubspotOptions {

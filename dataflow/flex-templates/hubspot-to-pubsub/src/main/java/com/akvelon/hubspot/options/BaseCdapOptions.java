@@ -25,6 +25,4 @@ public interface BaseCdapOptions extends PipelineOptions {
     String getOutputTopic();
 
     void setOutputTopic(String outputTopic);
-
-
 }

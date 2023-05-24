@@ -23,7 +23,7 @@ import org.apache.beam.sdk.options.Description;
  * The {@link CdapHubspotSourceOptions} interface provides the custom execution options passed by
  * the executor at the command-line for Cdap Hubspot Source examples.
  */
-public interface CdapHubspotStreamingSourceOptions extends CdapHubspotSourceOptions {
+public interface CdapHubspotStreamingSourceOptions extends CdapHubspotOptions {
 
   @Description("Delay in seconds between polling for new records updates.")
   Long getPullFrequencySec();

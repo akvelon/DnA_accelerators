@@ -1,0 +1,114 @@
+{
+  "name": "Salesforce to BigQuery",
+  "description": "Streaming pipeline. Ingests objects from Salesforce to a BigQuery",
+  "parameters": [
+    {
+      "name": "referenceName",
+      "label": "Cdap reference name",
+      "helpText": "Any string",
+      "regexes": [],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "username",
+      "label": "Salesforce username",
+      "helpText": "Example: myemail@akvelon.com",
+      "regexes": [],
+      "paramType": "TEXT",
+      "isOptional": true
+    },
+    {
+      "name": "password",
+      "label": "Salesforce user password",
+      "helpText": "Password without any additional characters or spaces",
+      "regexes": [],
+      "paramType": "TEXT",
+      "isOptional": true
+    },
+    {
+      "name": "securityToken",
+      "label": "Salesforce security token",
+      "helpText": "You can find this token in Salesforce personal settings",
+      "regexes": [],
+      "paramType": "TEXT",
+      "isOptional": true
+    },
+    {
+      "name": "consumerKey",
+      "label": "Salesforce connected app's consumer key",
+      "helpText": "You can find this key in Salesforce personal settings",
+      "regexes": [],
+      "paramType": "TEXT",
+      "isOptional": true
+    },
+    {
+      "name": "consumerSecret",
+      "label": "Salesforce connected app's consumer secret",
+      "helpText": "You can find this secret in Salesforce personal settings",
+      "regexes": [],
+      "paramType": "TEXT",
+      "isOptional": true
+    },
+    {
+      "name": "loginUrl",
+      "label": "Salesforce endpoint to authenticate to",
+      "helpText": "URL to Salesforce login via OAUTH in format 'https://MyDomainName.my.salesforce.com/services/oauth2/token'",
+      "regexes": [],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "SObjectName",
+      "label": "Salesforce object to pull supported by CDAP Salesforce Streaming Source",
+      "helpText": "Example: Account",
+      "regexes": [],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "outputTableSpec",
+      "label": "BigQuery table spec",
+      "helpText": "Big Query table spec to write the output to",
+      "regexes": [],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "offset",
+      "label": "Salesforce SObject query offset",
+      "helpText": "Example: 1 days, 2 hours, 30 minutes",
+      "regexes": [],
+      "paramType": "TEXT",
+      "isOptional": true
+    },
+    {
+      "name": "duration",
+      "label": "Salesforce SObject query duration",
+      "helpText": "Example: 1 days, 2 hours, 30 minutes",
+      "regexes": [],
+      "paramType": "TEXT",
+      "isOptional": true
+    },
+    {
+      "name": "datetimeBefore",
+      "label": "Salesforce SObject query datetime filter.",
+      "helpText": "Example: 2019-03-12T11:29:52Z",
+      "regexes": [],
+      "paramType": "TEXT",
+      "isOptional": true
+    },
+    {
+      "name": "datetimeAfter",
+      "label": "Salesforce SObject query datetime filter",
+      "helpText": "Example: 2019-03-12T11:29:52Z",
+      "regexes": [],
+      "paramType": "TEXT",
+      "isOptional": true
+    },
+    {
+      "name": "query",
+      "label": "The SOQL query to retrieve results from",
+      "helpText": "Example: select Id, Name from Opportunity",
+      "regexes": [],
+      "paramType": "TEXT",
+      "isOptional": true
+    }
+  ]
+}

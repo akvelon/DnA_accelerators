@@ -1,0 +1,1 @@
+mvn install:install-file -Dfile=beam-sdks-java-io-sparkreceiver-2-2.47.2-SNAPSHOT.jar   -DgroupId=org.apache.beam -DartifactId=beam-sdks-java-io-sparkreceiver-2  -Dversion=2.47.2   -Dpackaging=jar  -DgeneratePom=true

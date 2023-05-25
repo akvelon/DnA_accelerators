@@ -19,9 +19,6 @@ This section describes what is needed to run precompiled template that already b
 - How to create and run Dataflow job from Flex Template
 
 #### Artifacts
-Dataflow template json
-<br> TBD
- 
 [Expansion service](https://hub.docker.com/layers/akvelon/dna-accelerator/expansion-service/images/sha256-045986791106f035993819d3ff3b66ac182489a45c14eba78c6f5077ff11910f?context=explore) image
 ```
 docker pull akvelon/dna-accelerator:expansion-service
@@ -31,10 +28,6 @@ docker pull akvelon/dna-accelerator:expansion-service
 ```
 docker pull akvelon/dna-accelerator:template-launcher
 ```
-
-#### Template parameters
-
-TBD
 
 #### Run Dataflow job
 Upload Dataflow template json to GCP storage and follow [Running templates documentation](https://cloud.google.com/dataflow/docs/guides/templates/running-templates) setting all [template parameters](#template-parameters)

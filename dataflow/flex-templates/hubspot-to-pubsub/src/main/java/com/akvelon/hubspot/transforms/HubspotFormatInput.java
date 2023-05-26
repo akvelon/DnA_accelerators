@@ -33,7 +33,7 @@ import org.apache.beam.sdk.io.cdap.Plugin;
 import org.apache.hadoop.io.NullWritable;
 
 /** Different input transformations over the processed data in the pipeline. */
-public class FormatInputTransform {
+public class HubspotFormatInput {
 
   /**
    * Configures Cdap Hubspot Read transform.

@@ -15,12 +15,9 @@ Google Cloud Dataflow [Flex Templates](https://cloud.google.com/dataflow/docs/co
 
 ### Building the Project
 
-Run [install-dependencies.sh](../dependencies/install-dependencies.sh) script for installing Maven dependencies.
-1. Right-click the intall-dependencies.sh file
-2. "Run 'install-dependencies...'"
+1. Run [dependencies/install-dependencies.sh](../dependencies/install-dependencies.sh) script to install Maven dependecies.
 
-Build the entire project using the maven package command.
-
+2. Build the entire project using the Maven package command:
 ```sh
 mvn clean package
 ```

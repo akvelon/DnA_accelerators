@@ -77,7 +77,7 @@ an Uber JAR file.
 Build the Uber JAR:
 
 ```
-mvn package -am -pl salesforce-to-bigquery
+cd .. && mvn package -am -pl salesforce-to-bigquery && cd salesforce-to-bigquery
 ```
 
 An **Uber JAR** - also known as **fat JAR** - is a single JAR file that contains
@@ -167,7 +167,7 @@ the necessary information to run the job. This template already has the followin
 Navigate to the template folder:
 
 ```
-cd /path/to/DataflowTemplates/v2/salesforce-to-bigquery
+cd salesforce-to-bigquery
 ```
 
 Build the Dataflow Flex Template:
@@ -177,7 +177,7 @@ gcloud dataflow flex-template build ${TEMPLATE_PATH} \
        --image-gcr-path "${TARGET_GCR_IMAGE}" \
        --sdk-language "JAVA" \
        --flex-template-base-image ${BASE_CONTAINER_IMAGE} \
-       --metadata-file "src/main/resources/salesforce_to_biquery_streaming_metadata.json" \
+       --metadata-file "src/main/resources/salesforce_to_bigquery_streaming_metadata.json" \
        --jar "target/salesforce-to-bigquery-1.0-SNAPSHOT.jar" \
        --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="com.akvelon.salesforce.templates.CdapSalesforceStreamingToBigQuery"
 ```
@@ -242,7 +242,7 @@ gcloud dataflow flex-template build ${TEMPLATE_PATH} \
        --image-gcr-path "${TARGET_GCR_IMAGE}" \
        --sdk-language "JAVA" \
        --flex-template-base-image ${BASE_CONTAINER_IMAGE} \
-       --metadata-file "src/main/resources/salesforce_to_biquery_runinference_metadata.json" \
+       --metadata-file "src/main/resources/salesforce_to_bigquery_runinference_metadata.json" \
        --jar "target/salesforce-to-bigquery-1.0-SNAPSHOT.jar" \
        --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="com.akvelon.salesforce.templates.CdapRunInference"
 ```

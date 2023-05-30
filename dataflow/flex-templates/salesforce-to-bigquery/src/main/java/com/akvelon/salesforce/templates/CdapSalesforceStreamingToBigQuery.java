@@ -267,7 +267,7 @@ public class CdapSalesforceStreamingToBigQuery {
                         .setErrorRecordsTableSchema(DEADLETTER_SCHEMA)
                         .build());
 
-        pipeline.run().waitUntilFinish(Duration.standardMinutes(10));
+        pipeline.run();
     }
 
     /**

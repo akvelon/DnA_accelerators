@@ -40,7 +40,13 @@ You should follow:
 2. Building particular template paragraph.
 
 ### First steps
-
+#### GCP active project set up
+```
+gcloud auth login
+```
+```
+gcloud config set project <my-gcp-project-id>
+```
 #### Setting up pipeline variables:
 
 ```

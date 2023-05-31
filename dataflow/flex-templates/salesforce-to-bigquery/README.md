@@ -13,7 +13,7 @@ to read data from a [Cdap Salesforce Streaming plugin](https://github.com/data-i
 
 ## Getting Started
 
-This section describes what is needed to run precompiled template that already built.
+This section describes what is needed to run precompiled Salesforce to BigQuery Streaming multi-language (Java + Python ML) template that already built.
 - Prepare Flex Template artifacts
 - Template parameters to set
 - How to create and run Dataflow job from Flex Template
@@ -43,6 +43,7 @@ docker pull akvelon/dna-accelerator:expansion-service
 
 Start an instance on Google Compute Engine using this expansion service image.
 Store the host and port of expansion service instance, you will be able to provide it as the template parameter later.
+Please see [Expansion Service setup](https://github.com/akvelon/DnA_accelerators/blob/main/dataflow/ml/salesforce/pytorch/anomaly_detection/README.md#expansion-service) section for more details.
 
 #### Template parameters
 
@@ -57,6 +58,7 @@ The template requires the following parameters:
 - `pushTopicName` - name of the push topic that was created from query for some sObject. This push topic should have enabled *pushTopicNotifyCreate* property.
   If push topic with such name doesn't exist, then new push topic for provided **'sObjectName'** will be created automatically.
 - `outputTableSpec` - Big Query table spec to write the output to.
+- `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in <project-id>:<dataset>.<table> format.
 - `expansionService` - Python expansion service in format host:port, needed for RunInference transforms.
 - `modelUri` - Model URI for Python ML RunInference.
 - `paramsUri` - Params URI for Python ML RunInference.
@@ -68,7 +70,6 @@ The template allows for the user to supply the following optional parameters:
 - `secretStoreUrl` - URL to Salesforce credentials in HashiCorp Vault secret storage in the format
   'http(s)://vaultip:vaultport/path/to/credentials'.
 - `vaultToken` - Token to access HashiCorp Vault secret storage.
-- `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in <project-id>:<dataset>.<table> format.
 
 You can provide the next secured parameters directly instead of providing HashiCorp Vault parameters:
 - `username` - Salesforce username.
@@ -159,10 +160,10 @@ To execute the template you need to create the template spec file containing all
 the necessary information to run the job. This template already has the following
 [metadata file](src/main/resources/salesforce_to_bigquery_batch_metadata.json) in resources.
 
-Navigate to the template folder:
+Make sure that you are in the template folder:
 
 ```
-cd salesforce-to-bigquery
+/salesforce-to-bigquery
 ```
 
 Build the Dataflow Flex Template:
@@ -218,10 +219,10 @@ To execute the template you need to create the template spec file containing all
 the necessary information to run the job. This template already has the following
 [metadata file](src/main/resources/salesforce_to_bigquery_streaming_metadata.json) in resources.
 
-Navigate to the template folder:
+Make sure that you are in the template folder:
 
 ```
-cd salesforce-to-bigquery
+/salesforce-to-bigquery
 ```
 
 Build the Dataflow Flex Template:
@@ -275,7 +276,7 @@ on your project's [Container Registry](https://cloud.google.com/container-regist
 #### Prerequisites
 
 Multi-language Dataflow templates requires Python Expansion service.
-Additional information you can find [here](../Dataflow/ML/runinference/anomaly_detection/README.md).
+Additional information you can find [here](../../ml/salesforce/pytorch/anomaly_detection/README.md).
 
 #### Creating the Dataflow Flex Template
 
@@ -283,10 +284,10 @@ To execute the template you need to create the template spec file containing all
 the necessary information to run the job. This template already has the following
 [metadata file](src/main/resources/salesforce_to_bigquery_runinference_metadata.json) in resources.
 
-Navigate to the template folder:
+Make sure that you are in the template folder:
 
 ```
-cd salesforce-to-bigquery
+/salesforce-to-bigquery
 ```
 
 Build the Dataflow Flex Template from salesforce-to-bigquery folder:
@@ -302,6 +303,11 @@ gcloud dataflow flex-template build ${TEMPLATE_PATH} \
 ```
 
 #### Additional steps for multi-language templates
+
+*Note: Following commands will replace the default launcher image to the image with Java and Python.
+It is needed to run multi-language templates.*
+<br />
+<br />
 
 1. Navigate to the `resources` folder:
 
@@ -322,9 +328,6 @@ mvn clean install
 gcloud builds submit . --tag ${TARGET_GCR_IMAGE}:latest
 ```
 
-*Note: this command will replace the default image to the image with Java and Python.
-It is needed to run multi-language templates.*
-
 #### Template Parameters
 
 To deploy the pipeline, you should refer to the template file and pass the
@@ -338,11 +341,11 @@ The template requires the following parameters:
 - `pushTopicName` - name of the push topic that was created from query for some sObject. This push topic should have enabled *pushTopicNotifyCreate* property.
   If push topic with such name doesn't exist, then new push topic for provided **'sObjectName'** will be created automatically.
 - `outputTableSpec` - Big Query table spec to write the output to.
+- `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in <project-id>:<dataset>.<table> format.
 - `expansionService` - Python expansion service in format host:port, needed for RunInference transforms.
 - `modelUri` - Model URI for Python ML RunInference.
 - `paramsUri` - Params URI for Python ML RunInference.
 - `encoderUri` - Encoder URI for Python ML RunInference.
-- `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in <project-id>:<dataset>.<table> format.
 
 The template allows for the user to supply the following optional parameters:
 - `pullFrequencySec` - delay in seconds between polling for new records updates.

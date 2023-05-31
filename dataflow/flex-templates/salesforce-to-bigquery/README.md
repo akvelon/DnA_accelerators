@@ -201,6 +201,7 @@ The template requires the following parameters:
 - `pushTopicName` - name of the push topic that was created from query for some sObject. This push topic should have enabled *pushTopicNotifyCreate* property.
   If push topic with such name doesn't exist, then new push topic for provided **'sObjectName'** will be created automatically.
 - `outputTableSpec` - Big Query table spec to write the output to.
+- `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in <project-id>:<dataset>.<table> format.
 
 The template allows for the user to supply the following optional parameters:
 - `pullFrequencySec` - delay in seconds between polling for new records updates.
@@ -208,7 +209,6 @@ The template allows for the user to supply the following optional parameters:
 - `secretStoreUrl` - URL to Salesforce credentials in HashiCorp Vault secret storage in the format
   'http(s)://vaultip:vaultport/path/to/credentials'.
 - `vaultToken` - Token to access HashiCorp Vault secret storage.
-- `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in <project-id>:<dataset>.<table> format.
 
 You can provide the next secured parameters directly instead of providing HashiCorp Vault parameters:
 - `username` - Salesforce username.
@@ -238,10 +238,10 @@ the necessary information to run the job. This template already has the followin
 Navigate to the template folder:
 
 ```
-cd /path/to/DataflowTemplates/v2/salesforce-to-bigquery
+cd salesforce-to-bigquery
 ```
 
-Build the Dataflow Flex Template:
+Build the Dataflow Flex Template from salesforce-to-bigquery folder:
 
 ```
 gcloud dataflow flex-template build ${TEMPLATE_PATH} \
@@ -258,7 +258,7 @@ gcloud dataflow flex-template build ${TEMPLATE_PATH} \
 1. Navigate to the `resources` folder:
 
 ```
-cd /path/to/DataflowTemplates/v2/salesforce-to-bigquery/src/main/resources
+cd /src/main/resources
 ```
 
 2. Rebuild your project using this command:
@@ -294,6 +294,7 @@ The template requires the following parameters:
 - `modelUri` - Model URI for Python ML RunInference.
 - `paramsUri` - Params URI for Python ML RunInference.
 - `encoderUri` - Encoder URI for Python ML RunInference.
+- `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in <project-id>:<dataset>.<table> format.
 
 The template allows for the user to supply the following optional parameters:
 - `pullFrequencySec` - delay in seconds between polling for new records updates.
@@ -301,7 +302,6 @@ The template allows for the user to supply the following optional parameters:
 - `secretStoreUrl` - URL to Salesforce credentials in HashiCorp Vault secret storage in the format
   'http(s)://vaultip:vaultport/path/to/credentials'.
 - `vaultToken` - Token to access HashiCorp Vault secret storage.
-- `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in <project-id>:<dataset>.<table> format.
 
 You can provide the next secured parameters directly instead of providing HashiCorp Vault parameters:
 - `username` - Salesforce username.

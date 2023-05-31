@@ -69,7 +69,6 @@ import org.apache.beam.sdk.values.TupleTagList;
 import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.base.Throwables;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.io.NullWritable;
-import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -267,7 +266,7 @@ public class CdapSalesforceStreamingToBigQuery {
                         .setErrorRecordsTableSchema(DEADLETTER_SCHEMA)
                         .build());
 
-        pipeline.run().waitUntilFinish(Duration.standardMinutes(10));
+        pipeline.run();
     }
 
     /**

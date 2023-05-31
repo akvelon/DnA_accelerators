@@ -88,11 +88,13 @@ You should follow:
 2. Building particular template paragraph.
 
 ### First steps
-
-#### Install dependencies
-
-Run [install-dependencies.sh](../dependencies/install-dependencies.sh) script for installing Maven dependencies.
-
+#### GCP active project set up
+```
+gcloud auth login
+```
+```
+gcloud config set project <my-gcp-project-id>
+```
 #### Setting up pipeline variables:
 
 ```
@@ -126,16 +128,10 @@ TEMPLATE_PATH="gs://${BUCKET_NAME}/templates/your-template-name.json"
 The Dataflow Flex Templates require your Java project to be built into
 an Uber JAR file.
 
-Navigate to the v2 folder:
-
-```
-cd /path/to/DataflowTemplates/v2
-```
-
 Build the Uber JAR:
 
 ```
-mvn package -am -pl salesforce-to-bigquery
+cd .. && mvn package -am -pl salesforce-to-bigquery && cd salesforce-to-bigquery
 ```
 
 An **Uber JAR** - also known as **fat JAR** - is a single JAR file that contains
@@ -166,7 +162,7 @@ the necessary information to run the job. This template already has the followin
 Navigate to the template folder:
 
 ```
-cd /path/to/DataflowTemplates/v2/salesforce-to-bigquery
+cd salesforce-to-bigquery
 ```
 
 Build the Dataflow Flex Template:
@@ -192,7 +188,7 @@ The template requires the following parameters:
 - `loginUrl` - Salesforce endpoint to authenticate to. Example: *'https://MyDomainName.my.salesforce.com/services/oauth2/token'*.
 - `SObjectName` - Salesforce object to pull supported by CDAP Salesforce Streaming Source.
 - `pushTopicName` - name of the push topic that was created from query for some sObject. This push topic should have enabled *pushTopicNotifyCreate* property.
-  If push topic with such name doesn't exist, then new push topic for provided **'sObjectName'** will be created automatically.
+  If push topic with such name doesn't exist, then new push topic for provided **'SObjectName'** will be created automatically.
 - `outputTableSpec` - Big Query table spec to write the output to.
 
 The template allows for the user to supply the following optional parameters:
@@ -225,7 +221,7 @@ the necessary information to run the job. This template already has the followin
 Navigate to the template folder:
 
 ```
-cd /path/to/DataflowTemplates/v2/salesforce-to-bigquery
+cd salesforce-to-bigquery
 ```
 
 Build the Dataflow Flex Template:
@@ -301,7 +297,7 @@ gcloud dataflow flex-template build ${TEMPLATE_PATH} \
        --sdk-language "JAVA" \
        --flex-template-base-image ${BASE_CONTAINER_IMAGE} \
        --metadata-file "src/main/resources/salesforce_to_bigquery_runinference_metadata.json" \
-       --jar "biqtarget/salesforce-to-bigquery-1.0-SNAPSHOT.jar" \
+       --jar "target/salesforce-to-bigquery-1.0-SNAPSHOT.jar" \
        --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="com.akvelon.salesforce.templates.CdapRunInference"
 ```
 
@@ -377,8 +373,10 @@ You can execute template in 3 different ways:
         --parameters consumerKey="your-key" \
         --parameters consumerSecret="your-secret" \
         --parameters loginUrl="https://MyDomainName.my.salesforce.com/services/oauth2/token" \
+        --parameters referenceName="job referenceName" \
         --parameters SObjectName="Accounts" \
         #...other parameters
+        --parameters outputTableSpec="BigQuery output table" \
         --region "${REGION}"
     ```
 3. With a REST API request

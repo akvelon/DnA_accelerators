@@ -8,7 +8,7 @@ Run `train.ipynb` for training
 
 For the demo we use mock salesforce data with client opportunities.
 
-In this pipeline we use Tensorflow and TFX to build a deep learning model for predicting the amount in the sample data.
+In this pipeline we use Tensorflow and TFX to build a deep learning model for predicting the opportunity window in days
 
 Prepared models and parameters tailored for our data are located in `./pretrained`
 

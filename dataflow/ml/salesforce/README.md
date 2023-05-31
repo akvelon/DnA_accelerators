@@ -9,6 +9,10 @@ Repo contains all the images for deploying the service and also a training pipel
 These particular models and pipelines use data from **salesforce** and are prepared especially to work with this data.
 
 ### Install requirements:
+
+* Python 3.9+
+* [Google Cloud CLI](https://cloud.google.com/sdk/docs/install)
+
 `pip install -r requirements.txt`
 
 ### Structure

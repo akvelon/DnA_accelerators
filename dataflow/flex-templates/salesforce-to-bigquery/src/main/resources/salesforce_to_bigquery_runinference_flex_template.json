@@ -1,0 +1,159 @@
+{
+  "defaultEnvironment": {},
+  "image": "docker.io/akvelon/dna-accelerator:template-launcher-2.47",
+  "metadata": {
+    "name": "Salesforce to BigQuery",
+    "description": "Streaming multi-language pipeline (Java + Python ML). Ingests objects from Salesforce to a BigQuery.",
+    "parameters": [
+      {
+        "name": "referenceName",
+        "label": "Cdap reference name",
+        "helpText": "Any string",
+        "regexes": [],
+        "paramType": "TEXT"
+      },
+      {
+        "name": "username",
+        "label": "Salesforce username",
+        "helpText": "Example: myemail@akvelon.com",
+        "regexes": [],
+        "paramType": "TEXT",
+        "isOptional": true
+      },
+      {
+        "name": "password",
+        "label": "Salesforce user password",
+        "helpText": "Password without any additional characters or spaces",
+        "regexes": [],
+        "paramType": "TEXT",
+        "isOptional": true
+      },
+      {
+        "name": "securityToken",
+        "label": "Salesforce security token",
+        "helpText": "You can find this token in Salesforce personal settings",
+        "regexes": [],
+        "paramType": "TEXT",
+        "isOptional": true
+      },
+      {
+        "name": "consumerKey",
+        "label": "Salesforce connected app's consumer key",
+        "helpText": "You can find this key in Salesforce personal settings",
+        "regexes": [],
+        "paramType": "TEXT",
+        "isOptional": true
+      },
+      {
+        "name": "consumerSecret",
+        "label": "Salesforce connected app's consumer secret",
+        "helpText": "You can find this secret in Salesforce personal settings",
+        "regexes": [],
+        "paramType": "TEXT",
+        "isOptional": true
+      },
+      {
+        "name": "loginUrl",
+        "label": "Salesforce endpoint to authenticate to",
+        "helpText": "URL to Salesforce login via OAUTH in format 'https://MyDomainName.my.salesforce.com/services/oauth2/token'",
+        "regexes": [],
+        "paramType": "TEXT"
+      },
+      {
+        "name": "SObjectName",
+        "label": "Salesforce object to pull supported by CDAP Salesforce Streaming Source",
+        "helpText": "Example: Account",
+        "regexes": [],
+        "paramType": "TEXT"
+      },
+      {
+        "name": "outputTableSpec",
+        "label": "BigQuery table spec",
+        "helpText": "Big Query table spec to write the output to.",
+        "regexes": [],
+        "paramType": "TEXT"
+      },
+      {
+        "name": "outputDeadletterTable",
+        "label": "BigQuery dead letter table spec",
+        "helpText": "Big Query dead letter table spec to write the failed records to.",
+        "regexes": [],
+        "paramType": "TEXT"
+      },
+      {
+        "name": "pushTopicName",
+        "label": "Name of the push topic that was created from query for some sObject",
+        "helpText": "This push topic should have enabled 'pushTopicNotifyCreate' property. If push topic with such name doesn't exist, then new push topic for provided 'sObjectName' will be created automatically.",
+        "regexes": [],
+        "paramType": "TEXT"
+      },
+      {
+        "name": "pullFrequencySec",
+        "label": "Delay in seconds between polling for new records updates",
+        "helpText": "Example: 10",
+        "regexes": [],
+        "paramType": "TEXT",
+        "isOptional": true
+      },
+      {
+        "name": "startOffset",
+        "label": "Inclusive start offset from which the reading should be started",
+        "helpText": "Example: 10",
+        "regexes": [],
+        "paramType": "TEXT",
+        "isOptional": true
+      },
+      {
+        "name": "secretStoreUrl",
+        "label": "URL to credentials in Vault",
+        "helpText": "URL to Salesforce credentials in HashiCorp Vault secret storage in format 'http(s)://vaultip:vaultport/path/to/credentials'",
+        "regexes": [],
+        "paramType": "TEXT",
+        "isOptional": true
+      },
+      {
+        "name": "vaultToken",
+        "label": "Vault token",
+        "helpText": "Token to access HashiCorp Vault secret storage",
+        "regexes": [],
+        "paramType": "TEXT",
+        "isOptional": true
+      },
+      {
+        "name": "expansionService",
+        "label": "Host and port of Python expansion service, or leave empty for default",
+        "helpText": "localhost:8088",
+        "regexes": [],
+        "paramType": "TEXT",
+        "isOptional": true
+      },
+      {
+        "name": "modelUri",
+        "label": "Model URI for Python ML RunInference",
+        "helpText": "URI to ML model",
+        "regexes": [],
+        "paramType": "TEXT",
+        "isOptional": true
+      },
+      {
+        "name": "paramsUri",
+        "label": "Params URI for Python ML RunInference",
+        "helpText": "URI to ML model parameters",
+        "regexes": [],
+        "paramType": "TEXT",
+        "isOptional": true
+      },
+      {
+        "name": "encoderUri",
+        "label": "Encoder URI for Python ML RunInference",
+        "helpText": "URI to ML encoder",
+        "regexes": [],
+        "paramType": "TEXT",
+        "isOptional": true
+      }
+    ]
+  },
+  "sdkInfo": {
+    "language": "JAVA"
+  }
+}

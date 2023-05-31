@@ -309,10 +309,10 @@ It is needed to run multi-language templates.*
 <br />
 <br />
 
-1. Navigate to the `resources` folder:
+1. Navigate to the `flex-templates` folder:
 
 ```
-cd /src/main/resources
+cd DnA_accelerators/dataflow/flex-templates
 ```
 
 2. Rebuild your project using this command:
@@ -321,8 +321,16 @@ cd /src/main/resources
 mvn clean install
 ```
 
-3. Copy `salesforce-to-bigquery-1.0-SNAPSHOT.jar` file from the target folder to the `resources` folder from step 1.
-4. Execute the next command:
+3. Navigate to `resources` folder:
+```
+cd salesforce-to-bigquery/src/main/resources
+```
+
+4. Copy `salesforce-to-bigquery-1.0-SNAPSHOT.jar` file from the target folder to the `resources` folder from step 3.
+```
+cp ../../../target/salesforce-to-bigquery-1.0-SNAPSHOT.jar .
+```
+5. Execute the next command:
 
 ```
 gcloud builds submit . --tag ${TARGET_GCR_IMAGE}:latest
@@ -342,7 +350,9 @@ The template requires the following parameters:
   If push topic with such name doesn't exist, then new push topic for provided **'sObjectName'** will be created automatically.
 - `outputTableSpec` - Big Query table spec to write the output to.
 - `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in <project-id>:<dataset>.<table> format.
-- `expansionService` - Python expansion service in format host:port, needed for RunInference transforms.
+- `expansionService` - Python expansion service in format host:port, needed for RunInference transforms. 
+You can create a Compute Engine VM using the pre-build [expansion service image](https://hub.docker.com/layers/akvelon/dna-accelerator/expansion-service/images/sha256-045986791106f035993819d3ff3b66ac182489a45c14eba78c6f5077ff11910f?context=explore), 
+and configure port 8088 open for incoming connections in GCP Firewall. Please see [Expansion Service setup](https://github.com/akvelon/DnA_accelerators/blob/main/dataflow/ml/salesforce/pytorch/anomaly_detection/README.md#expansion-service) documentation for more details on how to build your expansion service.
 - `modelUri` - Model URI for Python ML RunInference.
 - `paramsUri` - Params URI for Python ML RunInference.
 - `encoderUri` - Encoder URI for Python ML RunInference.

@@ -40,7 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link HubspotToPubSub} Streaming pipeline reading json encoded data from Hubspot and publishes
+ * The {@link HubspotToPubSubBatch} Streaming pipeline reading json encoded data from Hubspot and publishes
  * to Google Cloud PubSub. Input topics, output topic. <br>
  *
  * <p><b>Pipeline Requirements</b>
@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
  * TARGET_GCR_IMAGE=gcr.io/${PROJECT}/${IMAGE_NAME}
  * BASE_CONTAINER_IMAGE=my-base-container-image
  * BASE_CONTAINER_IMAGE_VERSION=my-base-container-image-version
- * TEMPLATE_PATH="gs://${BUCKET_NAME}/templates/hubspot_to_pubsub.json"
+ * TEMPLATE_PATH="gs://${BUCKET_NAME}/templates/hubspot_streaming_to_pubsub.json"
  * TARGET_GCR_IMAGE=gcr.io/${PROJECT}/${IMAGE_NAME}
  *
  * # Create bucket in the cloud storage
@@ -85,7 +85,7 @@ import org.slf4j.LoggerFactory;
  *       --image-gcr-path "${TARGET_GCR_IMAGE}" \
  *       --sdk-language "JAVA" \
  *       --flex-template-base-image ${BASE_CONTAINER_IMAGE} \
- *       --metadata-file "src/main/resources/hubspot_to_pubsub.json" \
+ *       --metadata-file "src/main/resources/hubspot_streaming_to_pubsub.json" \
  *       --jar "target/hubspot-to-pubsub-1.0-SNAPSHOT.jar" \
  *       --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="com.akvelon.hubspot.templates.HubspotToPubSub"
  *

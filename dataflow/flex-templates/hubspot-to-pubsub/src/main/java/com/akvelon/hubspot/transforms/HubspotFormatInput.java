@@ -41,7 +41,7 @@ public class HubspotFormatInput {
    * @param pluginConfigParams Cdap Hubspot plugin config parameters
    * @return configured Read transform
    */
-  public static CdapIO.Read<NullWritable, JsonElement> readFromCdapHubspot(
+  public static CdapIO.Read<NullWritable, JsonElement> readFromCdapHubspotBatch(
       Map<String, Object> pluginConfigParams) {
 
     final SourceHubspotConfig pluginConfig =

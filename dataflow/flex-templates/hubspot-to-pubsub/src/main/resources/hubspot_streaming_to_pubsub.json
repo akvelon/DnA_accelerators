@@ -1,5 +1,5 @@
 {
-  "name": "Hubspot to PubSub",
+  "name": "Hubspot streaming to PubSub",
   "description": "Streaming pipeline. Ingests objects from HubSpot to a PubSub",
   "parameters": [
     {

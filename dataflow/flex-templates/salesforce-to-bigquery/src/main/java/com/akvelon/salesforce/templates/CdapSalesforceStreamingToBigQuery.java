@@ -127,6 +127,7 @@ public class CdapSalesforceStreamingToBigQuery {
     private static final FailsafeRecordCoder<String, String> FAILSAFE_RECORD_CODER =
             FailsafeRecordCoder.of(
                     NullableCoder.of(StringUtf8Coder.of()), NullableCoder.of(StringUtf8Coder.of()));
+    private static final String SOBJECT_PARAMETER_PREFIX = "\"sobject\":";
 
     /**
      * Main entry point for pipeline execution.
@@ -222,6 +223,7 @@ public class CdapSalesforceStreamingToBigQuery {
                                 .withWriteDisposition(BigQueryIO.Write.WriteDisposition.WRITE_APPEND)
                                 .withExtendedErrorInfo()
                                 .withMethod(BigQueryIO.Write.Method.STREAMING_INSERTS)
+                                .ignoreUnknownValues()
                                 .withFailedInsertRetryPolicy(InsertRetryPolicy.retryTransientErrors())
                                 .to(options.getOutputTableSpec()));
 
@@ -294,6 +296,18 @@ public class CdapSalesforceStreamingToBigQuery {
     }
 
     /**
+     * Extracts SObject json from the original {@param json} with additional parameters.
+     *
+     * @return extracted SObject json, or original json if it's impossible to extract.
+     */
+    public static String extractSObjectFromJson(String json) {
+        if (json.contains(SOBJECT_PARAMETER_PREFIX)) {
+            String sobject = json.split(SOBJECT_PARAMETER_PREFIX)[1];
+            return sobject.substring(0, sobject.length() - 1);
+        } else return json;
+    }
+
+    /**
      * Converts a JSON string to a {@link TableRow} object. If the data fails to convert, a {@link
      * RuntimeException} will be thrown.
      *
@@ -354,9 +368,9 @@ public class CdapSalesforceStreamingToBigQuery {
                                 public void processElement(ProcessContext context) {
                                     FailsafeRecord<T, String> element = context.element();
                                     String json = element.getCurrentPayload();
-
                                     try {
-                                        TableRow row = convertJsonToTableRow(json);
+                                        String sobjectJson = extractSObjectFromJson(json);
+                                        TableRow row = convertJsonToTableRow(sobjectJson);
                                         context.output(row);
                                     } catch (Exception e) {
                                         context.output(

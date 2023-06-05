@@ -58,7 +58,7 @@ The template requires the following parameters:
 - `pushTopicName` - name of the push topic that was created from query for some sObject. This push topic should have enabled *pushTopicNotifyCreate* property.
   If push topic with such name doesn't exist, then new push topic for provided **'sObjectName'** will be created automatically.
 - `outputTableSpec` - Big Query table spec to write the output to.
-- `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in <project-id>:<dataset>.<table> format.
+- `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in \<project-id\>:\<dataset\>.\<table\> format.
 - `expansionService` - Python expansion service in format host:port, needed for RunInference transforms.
 - `modelUri` - Model URI for Python ML RunInference.
 - `paramsUri` - Params URI for Python ML RunInference.
@@ -250,7 +250,7 @@ The template requires the following parameters:
 - `pushTopicName` - name of the push topic that was created from query for some sObject. This push topic should have enabled *pushTopicNotifyCreate* property.
   If push topic with such name doesn't exist, then new push topic for provided **'sObjectName'** will be created automatically.
 - `outputTableSpec` - Big Query table spec to write the output to.
-- `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in <project-id>:<dataset>.<table> format.
+- `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in \<project-id\>:\<dataset\>.\<table\> format.
 
 The template allows for the user to supply the following optional parameters:
 - `pullFrequencySec` - delay in seconds between polling for new records updates.
@@ -349,7 +349,7 @@ The template requires the following parameters:
 - `pushTopicName` - name of the push topic that was created from query for some sObject. This push topic should have enabled *pushTopicNotifyCreate* property.
   If push topic with such name doesn't exist, then new push topic for provided **'sObjectName'** will be created automatically.
 - `outputTableSpec` - Big Query table spec to write the output to.
-- `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in <project-id>:<dataset>.<table> format.
+- `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in \<project-id\>:\<dataset\>.\<table\> format.
 - `expansionService` - Python expansion service in format host:port, needed for RunInference transforms. 
 You can create a Compute Engine VM using the pre-build [expansion service image](https://hub.docker.com/layers/akvelon/dna-accelerator/expansion-service/images/sha256-045986791106f035993819d3ff3b66ac182489a45c14eba78c6f5077ff11910f?context=explore), 
 and configure port 8088 open for incoming connections in GCP Firewall. Please see [Expansion Service setup](https://github.com/akvelon/DnA_accelerators/blob/main/dataflow/ml/salesforce/pytorch/anomaly_detection/README.md#expansion-service) documentation for more details on how to build your expansion service.

@@ -19,31 +19,26 @@ public interface SalesforceBaseSourceOptions extends DataflowPipelineOptions {
 
     void setSObjectName(String sObjectName);
 
-    @Validation.Required
     @Description(SalesforceConstants.PROPERTY_USERNAME)
     String getUsername();
 
     void setUsername(String username);
 
-    @Validation.Required
     @Description(SalesforceConstants.PROPERTY_PASSWORD)
     String getPassword();
 
     void setPassword(String password);
 
-    @Validation.Required
     @Description(SalesforceConstants.PROPERTY_SECURITY_TOKEN)
     String getSecurityToken();
 
     void setSecurityToken(String securityToken);
 
-    @Validation.Required
     @Description(SalesforceConstants.PROPERTY_CONSUMER_KEY)
     String getConsumerKey();
 
     void setConsumerKey(String consumerKey);
 
-    @Validation.Required
     @Description(SalesforceConstants.PROPERTY_CONSUMER_SECRET)
     String getConsumerSecret();
 

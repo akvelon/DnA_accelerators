@@ -1,0 +1,16 @@
+[
+  {
+    "name": "opportunityId",
+    "mode": "REQUIRED",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "anomalyCluster",
+    "mode": "REQUIRED",
+    "type": "INTEGER",
+    "description": null,
+    "fields": []
+  }
+]

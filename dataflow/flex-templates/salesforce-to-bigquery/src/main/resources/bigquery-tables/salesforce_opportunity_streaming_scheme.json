@@ -1,0 +1,699 @@
+[
+  {
+    "name": "LastCloseDateChangedHistoryId",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "LastModifiedDate",
+    "mode": "NULLABLE",
+    "type": "TIMESTAMP",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "DeliveryInstallationStatus__c",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "MainCompetitors__c",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "AccountId",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "FiscalYear",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "HasOpportunityLineItem",
+    "mode": "NULLABLE",
+    "type": "BOOLEAN",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "ForecastCategory",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "LastReferencedDate",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "ContactId",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "IsClosed",
+    "mode": "NULLABLE",
+    "type": "BOOLEAN",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "CloseDate",
+    "mode": "NULLABLE",
+    "type": "TIMESTAMP",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "Name",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "HasOpenActivity",
+    "mode": "NULLABLE",
+    "type": "BOOLEAN",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "TotalOpportunityQuantity",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "LastAmountChangedHistoryId",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "ExpectedRevenue",
+    "mode": "NULLABLE",
+    "type": "INTEGER",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "CreatedById",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "OwnerId",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "CampaignId",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "IsWon",
+    "mode": "NULLABLE",
+    "type": "BOOLEAN",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "TrackingNumber__c",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "PushCount",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "FiscalQuarter",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "IsDeleted",
+    "mode": "NULLABLE",
+    "type": "BOOLEAN",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "StageName",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "Amount",
+    "mode": "NULLABLE",
+    "type": "INTEGER",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "LastViewedDate",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "Probability",
+    "mode": "NULLABLE",
+    "type": "INTEGER",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "OrderNumber__c",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "Fiscal",
+    "mode": "NULLABLE",
+    "type": "RECORD",
+    "description": null,
+    "fields": [
+      {
+        "name": "Quarter",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "Year",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      }
+    ]
+  },
+  {
+    "name": "SystemModstamp",
+    "mode": "NULLABLE",
+    "type": "TIMESTAMP",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "LastStageChangeDate",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "Type",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "CurrentGenerators__c",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "LeadSource",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "CreatedDate",
+    "mode": "NULLABLE",
+    "type": "TIMESTAMP",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "HasOverdueTask",
+    "mode": "NULLABLE",
+    "type": "BOOLEAN",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "LastActivityDate",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "Pricebook2Id",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "Id",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "ForecastCategoryName",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "IsPrivate",
+    "mode": "NULLABLE",
+    "type": "BOOLEAN",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "LastModifiedById",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "NextStep",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": null,
+    "fields": []
+  },
+  {
+    "name": "event",
+    "mode": "NULLABLE",
+    "type": "RECORD",
+    "description": null,
+    "fields": [
+      {
+        "name": "createdDate",
+        "mode": "NULLABLE",
+        "type": "TIMESTAMP",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "replayId",
+        "mode": "NULLABLE",
+        "type": "INTEGER",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "type",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      }
+    ]
+  },
+  {
+    "name": "sobject",
+    "mode": "NULLABLE",
+    "type": "RECORD",
+    "description": null,
+    "fields": [
+      {
+        "name": "LastCloseDateChangedHistoryId",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "LastModifiedDate",
+        "mode": "NULLABLE",
+        "type": "TIMESTAMP",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "DeliveryInstallationStatus__c",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "MainCompetitors__c",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "AccountId",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "FiscalYear",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "HasOpportunityLineItem",
+        "mode": "NULLABLE",
+        "type": "BOOLEAN",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "ForecastCategory",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "LastReferencedDate",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "ContactId",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "IsClosed",
+        "mode": "NULLABLE",
+        "type": "BOOLEAN",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "CloseDate",
+        "mode": "NULLABLE",
+        "type": "TIMESTAMP",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "Name",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "HasOpenActivity",
+        "mode": "NULLABLE",
+        "type": "BOOLEAN",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "TotalOpportunityQuantity",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "LastAmountChangedHistoryId",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "ExpectedRevenue",
+        "mode": "NULLABLE",
+        "type": "INTEGER",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "CreatedById",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "OwnerId",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "CampaignId",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "IsWon",
+        "mode": "NULLABLE",
+        "type": "BOOLEAN",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "TrackingNumber__c",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "PushCount",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "FiscalQuarter",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "IsDeleted",
+        "mode": "NULLABLE",
+        "type": "BOOLEAN",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "StageName",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "Amount",
+        "mode": "NULLABLE",
+        "type": "INTEGER",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "LastViewedDate",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "Probability",
+        "mode": "NULLABLE",
+        "type": "INTEGER",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "OrderNumber__c",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "Fiscal",
+        "mode": "NULLABLE",
+        "type": "RECORD",
+        "description": null,
+        "fields": [
+          {
+            "name": "Quarter",
+            "mode": "NULLABLE",
+            "type": "STRING",
+            "description": null,
+            "fields": []
+          },
+          {
+            "name": "Year",
+            "mode": "NULLABLE",
+            "type": "STRING",
+            "description": null,
+            "fields": []
+          }
+        ]
+      },
+      {
+        "name": "SystemModstamp",
+        "mode": "NULLABLE",
+        "type": "TIMESTAMP",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "LastStageChangeDate",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "Type",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "CurrentGenerators__c",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "LeadSource",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "CreatedDate",
+        "mode": "NULLABLE",
+        "type": "TIMESTAMP",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "HasOverdueTask",
+        "mode": "NULLABLE",
+        "type": "BOOLEAN",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "LastActivityDate",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "Pricebook2Id",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "Id",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "ForecastCategoryName",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "IsPrivate",
+        "mode": "NULLABLE",
+        "type": "BOOLEAN",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "LastModifiedById",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      },
+      {
+        "name": "NextStep",
+        "mode": "NULLABLE",
+        "type": "STRING",
+        "description": null,
+        "fields": []
+      }
+    ]
+  }
+]

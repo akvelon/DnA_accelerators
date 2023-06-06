@@ -304,7 +304,9 @@ public class CdapSalesforceStreamingToBigQuery {
         if (json.contains(SOBJECT_PARAMETER_PREFIX)) {
             String sobject = json.split(SOBJECT_PARAMETER_PREFIX)[1];
             return sobject.substring(0, sobject.length() - 1);
-        } else return json;
+        } else {
+            return json;
+        }
     }
 
     /**

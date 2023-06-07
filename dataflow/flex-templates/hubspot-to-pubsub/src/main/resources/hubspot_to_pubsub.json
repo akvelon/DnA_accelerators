@@ -1,0 +1,54 @@
+{
+  "name": "Hubspot to PubSub",
+  "description": "Streaming pipeline. Ingests objects from HubSpot to a PubSub",
+  "parameters": [
+    {
+      "name": "referenceName",
+      "label": "Cdap reference name",
+      "helpText": "Any string",
+      "regexes": [],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "authToken",
+      "label": "Hubspot Private Application Access token",
+      "helpText": "your-private-app-access-token",
+      "regexes": [],
+      "paramType": "TEXT",
+      "isOptional": false
+    },
+    {
+      "name": "objectType",
+      "label": "Hubspot objects to pull supported by CDAP",
+      "helpText": "Contacts",
+      "regexes": [],
+      "paramType": "TEXT",
+      "isOptional": false
+    },
+    {
+      "name": "pullFrequencySec",
+      "label": "delay in seconds between polling for new records updates.",
+      "helpText": "100",
+      "regexes": [],
+      "paramType": "TEXT",
+      "isOptional": true
+    },
+    {
+      "name": "startOffset",
+      "label": "inclusive start offset from which the reading should be started.",
+      "helpText": "1000",
+      "regexes": [],
+      "paramType": "TEXT",
+      "isOptional": true
+    },
+    {
+      "name": "outputTopic",
+      "label": "Pub/Sub output topic",
+      "helpText": "Pub/Sub topic to write the output, in the format of 'projects/yourproject/topics/yourtopic'",
+      "regexes": [
+        "^projects\\/[^\\n\\r\\/]+\\/topics\\/[^\\n\\r\\/]+$"
+      ],
+      "paramType": "TEXT"
+    }
+  ]
+}

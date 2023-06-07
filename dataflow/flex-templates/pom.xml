@@ -27,6 +27,7 @@
         <module>salesforce-to-txt</module>
         <module>salesforce-to-bigquery</module>
         <module>salesforce-common</module>
+        <module>hubspot-to-pubsub</module>
     </modules>
 
     <properties>

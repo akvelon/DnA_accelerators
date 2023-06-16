@@ -57,6 +57,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
+import jersey.repackaged.com.google.common.collect.Lists;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.coders.Coder;
 import org.apache.beam.sdk.coders.CoderRegistry;
@@ -95,6 +96,7 @@ import org.apache.beam.sdk.values.TupleTagList;
 import org.apache.beam.sdk.values.TypeDescriptor;
 import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.base.Throwables;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.joda.time.Duration;
 import org.slf4j.Logger;
@@ -154,7 +156,7 @@ public class CdapRunInference {
             FailsafeRecordCoder.of(
                     NullableCoder.of(StringUtf8Coder.of()), NullableCoder.of(StringUtf8Coder.of()));
 
-    public static final String ANOMALY_DETECTION_TRANFORM = "anomaly_detection.AnomalyDetection";
+    public static final String ANOMALY_DETECTION_TRANSFORM = "anomaly_detection.AnomalyDetection";
     private static final String DEFAULT_PYTHON_SDK_OVERRIDES = "apache/beam_python3.9_sdk:2.47.0,docker.io/akvelon/dna-accelerator:expansion-service-2.47-SDK";
 
     /**
@@ -168,7 +170,9 @@ public class CdapRunInference {
                         .withValidation()
                         .as(SalesforceToBigQueryStreamingMLSourceOptions.class);
 
-        options.setSdkHarnessContainerImageOverrides(DEFAULT_PYTHON_SDK_OVERRIDES);
+        if (StringUtils.isNotEmpty(options.getExpansionService())) {
+            options.setSdkHarnessContainerImageOverrides(DEFAULT_PYTHON_SDK_OVERRIDES);
+        }
 
         // Create the pipeline
         Pipeline pipeline = Pipeline.create(options);
@@ -259,15 +263,21 @@ public class CdapRunInference {
         Coder<KV<String, Row>> outputCoder =
                     KvCoder.of(StringUtf8Coder.of(), RowCoder.of(outSchema));
 
+        PythonExternalTransform<PCollection<?>, PCollection<KV<String, Row>>> runInferenceTransform =
+                PythonExternalTransform.<PCollection<?>, PCollection<KV<String, Row>>>from(
+                                ANOMALY_DETECTION_TRANSFORM, options.getExpansionService())
+                        .withKwarg("model_uri", options.getModelUri())
+                        .withKwarg("encoder_uri", options.getEncoderUri())
+                        .withKwarg("params_uri", options.getParamsUri());
+
+        //If expansion service is provided, then it will be used, otherwise all extra packages will be downloaded from pip
+        if (StringUtils.isEmpty(options.getExpansionService())) {
+            runInferenceTransform.withExtraPackages(Lists.newArrayList("akvelon-test-anomaly-detection",
+                    "category_encoders", "torch", "hdbscan", "autoembedder"));
+        }
         PCollection<String> outputLines =
-                    input.apply(
-                    PythonExternalTransform.<PCollection<?>, PCollection<KV<String, Row>>>from(
-                                    ANOMALY_DETECTION_TRANFORM, options.getExpansionService())
-                            .withKwarg("model_uri", options.getModelUri())
-                            .withKwarg("encoder_uri", options.getEncoderUri())
-                            .withKwarg("params_uri", options.getParamsUri())
-                            .withOutputCoder(outputCoder))
-                    .apply("FormatOutput", MapElements.via(new FormatOutput()));
+                input.apply(runInferenceTransform.withOutputCoder(outputCoder))
+                        .apply("FormatOutput", MapElements.via(new FormatOutput()));
 
         /*
          * Step #4: Transform the RunInference result into TableRows

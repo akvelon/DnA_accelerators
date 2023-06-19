@@ -44,10 +44,7 @@ docker pull akvelon/dna-accelerator:expansion-service
 Start an instance on Google Compute Engine using this expansion service image.
 Store the host and port of expansion service instance, you will be able to provide it as the template parameter later.
 Please see [Expansion Service setup](https://github.com/akvelon/DnA_accelerators/blob/main/dataflow/ml/salesforce/pytorch/anomaly_detection/README.md#expansion-service) section for more details.
-
-Starting from Beam 2.42, `RunInference` class supports `withExtraPackages` method to install your packages in both the construction-time and execution time environment. 
-This approach could be used instead of providing expansion service. This is recommended option if you don't need additional customization and all of your packages are available in pip.
-However, for use cases that require more significant customization, custom expansion service must be used.
+If there is no need to use an extension service for customization, you can use the default approach - the `withExtraPackages` method of the `RunInference` class, passing pip dependencies there.
 
 #### Template parameters
 
@@ -55,32 +52,7 @@ To deploy the pipeline, you should refer to the template file and pass the
 [parameters](https://cloud.google.com/dataflow/docs/guides/specifying-exec-params#setting-other-cloud-dataflow-pipeline-options)
 required by the pipeline.
 
-The template requires the following parameters:
-- `referenceName` - This will be used to uniquely identify this source.
-- `loginUrl` - Salesforce endpoint to authenticate to. Example: *'https://MyDomainName.my.salesforce.com/services/oauth2/token'*.
-- `SObjectName` - Salesforce object to pull supported by CDAP Salesforce Streaming Source.
-- `pushTopicName` - name of the push topic that was created from query for some sObject. This push topic should have enabled *pushTopicNotifyCreate* property.
-  If push topic with such name doesn't exist, then new push topic for provided **'sObjectName'** will be created automatically.
-- `outputTableSpec` - Big Query table spec to write the output to. The table scheme you can find in [salesforce_opportunity_anomaly_detection_scheme.json](/src/main/resources/bigquery-tables/salesforce_opportunity_anomaly_detecton_scheme.json)
-- `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in \<project-id\>:\<dataset\>.\<table\> format. The table scheme you can find in [deadletter_table_scheme.json](/src/main/resources/bigquery-tables/deadletter_table_scheme.json)
-- `modelUri` - Model URI for Python ML RunInference.
-- `paramsUri` - Params URI for Python ML RunInference.
-- `encoderUri` - Encoder URI for Python ML RunInference.
-
-The template allows for the user to supply the following optional parameters:
-- `pullFrequencySec` - delay in seconds between polling for new records updates.
-- `startOffset` - inclusive start offset from which the reading should be started.
-- `secretStoreUrl` - URL to Salesforce credentials in HashiCorp Vault secret storage in the format
-  'http(s)://vaultip:vaultport/path/to/credentials'.
-- `vaultToken` - Token to access HashiCorp Vault secret storage.
-- `expansionService` - Python expansion service in format host:port, needed for RunInference transforms. You can leave it empty if all of your extra packages are available in pip.
-
-You can provide the next secured parameters directly instead of providing HashiCorp Vault parameters:
-- `username` - Salesforce username.
-- `password` - Salesforce user password.
-- `securityToken` - Salesforce security token.
-- `consumerKey` - Salesforce connected app's consumer key.
-- `consumerSecret` - Salesforce connected app's consumer secret.
+The template parameters you can find in [Build Salesforce to BigQuery Streaming multi-language (Java + Python ML) template parameters section](#multi-language-template-params).
 
 #### Run Dataflow job
 Upload Dataflow template json to GCP storage and follow [Running templates documentation](https://cloud.google.com/dataflow/docs/guides/templates/running-templates) setting all [template parameters](#template-parameters)
@@ -342,25 +314,28 @@ cp ../../../target/salesforce-to-bigquery-1.0-SNAPSHOT.jar .
 gcloud builds submit . --tag ${TARGET_GCR_IMAGE}:latest
 ```
 
-#### Template Parameters
-
+#### <a id="multi-language-template-params"></a>Template Parameters
 To deploy the pipeline, you should refer to the template file and pass the
 [parameters](https://cloud.google.com/dataflow/docs/guides/specifying-exec-params#setting-other-cloud-dataflow-pipeline-options)
 required by the pipeline.
+
+Starting from Beam 2.42, `RunInference` class supports `withExtraPackages` method to install your packages in both the construction-time and execution-time environment. 
+This approach could be used instead of providing expansion service. This is a recommended option if you don't need additional customization and all of your packages are available in pip.
+However, for use cases that require more significant customization, a custom expansion service must be used.
 
 The template requires the following parameters:
 - `referenceName` - This will be used to uniquely identify this source.
 - `loginUrl` - Salesforce endpoint to authenticate to. Example: *'https://MyDomainName.my.salesforce.com/services/oauth2/token'*.
 - `SObjectName` - Salesforce object to pull supported by CDAP Salesforce Streaming Source.
 - `pushTopicName` - name of the push topic that was created from query for some sObject. This push topic should have enabled *pushTopicNotifyCreate* property.
-  If push topic with such name doesn't exist, then new push topic for provided **'sObjectName'** will be created automatically.
+  If push topic with such name doesn't exist, then a new push topic for provided **'sObjectName'** will be created automatically.
 - `outputTableSpec` - Big Query table spec to write the output to. The table scheme you can find in [salesforce_opportunity_anomaly_detection_scheme.json](/src/main/resources/bigquery-tables/salesforce_opportunity_anomaly_detecton_scheme.json)
 - `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in \<project-id\>:\<dataset\>.\<table\> format. The table scheme you can find in [deadletter_table_scheme.json](/src/main/resources/bigquery-tables/deadletter_table_scheme.json)
 - `modelUri` - Model URI for Python ML RunInference.
 - `paramsUri` - Params URI for Python ML RunInference.
 - `encoderUri` - Encoder URI for Python ML RunInference.
 
-The template allows for the user to supply the following optional parameters:
+The template allows the user to supply the following optional parameters:
 - `pullFrequencySec` - delay in seconds between polling for new records updates.
 - `startOffset` - inclusive start offset from which the reading should be started.
 - `secretStoreUrl` - URL to Salesforce credentials in HashiCorp Vault secret storage in the format

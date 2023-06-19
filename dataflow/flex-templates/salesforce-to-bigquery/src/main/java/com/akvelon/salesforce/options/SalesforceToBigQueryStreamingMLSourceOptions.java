@@ -12,6 +12,7 @@ public interface SalesforceToBigQueryStreamingMLSourceOptions extends Salesforce
     //Python
 
     @Description("Python expansion service in format host:port")
+    @Default.String("")
     String getExpansionService();
 
     void setExpansionService(String expansionService);

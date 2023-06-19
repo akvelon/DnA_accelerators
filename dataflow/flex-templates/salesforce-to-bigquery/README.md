@@ -45,6 +45,10 @@ Start an instance on Google Compute Engine using this expansion service image.
 Store the host and port of expansion service instance, you will be able to provide it as the template parameter later.
 Please see [Expansion Service setup](https://github.com/akvelon/DnA_accelerators/blob/main/dataflow/ml/salesforce/pytorch/anomaly_detection/README.md#expansion-service) section for more details.
 
+Starting from Beam 2.42, `RunInference` class supports `withExtraPackages` method to install your packages in both the construction-time and execution time environment. 
+This approach could be used instead of providing expansion service. This is recommended option if you don't need additional customization and all of your packages are available in pip.
+However, for use cases that require more significant customization, custom expansion service must be used.
+
 #### Template parameters
 
 To deploy the pipeline, you should refer to the template file and pass the
@@ -59,7 +63,6 @@ The template requires the following parameters:
   If push topic with such name doesn't exist, then new push topic for provided **'sObjectName'** will be created automatically.
 - `outputTableSpec` - Big Query table spec to write the output to. The table scheme you can find in [salesforce_opportunity_anomaly_detection_scheme.json](/src/main/resources/bigquery-tables/salesforce_opportunity_anomaly_detecton_scheme.json)
 - `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in \<project-id\>:\<dataset\>.\<table\> format. The table scheme you can find in [deadletter_table_scheme.json](/src/main/resources/bigquery-tables/deadletter_table_scheme.json)
-- `expansionService` - Python expansion service in format host:port, needed for RunInference transforms.
 - `modelUri` - Model URI for Python ML RunInference.
 - `paramsUri` - Params URI for Python ML RunInference.
 - `encoderUri` - Encoder URI for Python ML RunInference.
@@ -70,6 +73,7 @@ The template allows for the user to supply the following optional parameters:
 - `secretStoreUrl` - URL to Salesforce credentials in HashiCorp Vault secret storage in the format
   'http(s)://vaultip:vaultport/path/to/credentials'.
 - `vaultToken` - Token to access HashiCorp Vault secret storage.
+- `expansionService` - Python expansion service in format host:port, needed for RunInference transforms. You can leave it empty if all of your extra packages are available in pip.
 
 You can provide the next secured parameters directly instead of providing HashiCorp Vault parameters:
 - `username` - Salesforce username.
@@ -275,7 +279,9 @@ on your project's [Container Registry](https://cloud.google.com/container-regist
 
 #### Prerequisites
 
-Multi-language Dataflow templates requires Python Expansion service.
+Multi-language Dataflow templates imply possible use of Python Expansion service.
+Expansion service must be used when additional customization is required for your use case.
+If all of your extra packages are available in pip, then you may not use the expansion service.
 Additional information you can find [here](../../ml/salesforce/pytorch/anomaly_detection/README.md).
 
 #### Creating the Dataflow Flex Template
@@ -350,9 +356,6 @@ The template requires the following parameters:
   If push topic with such name doesn't exist, then new push topic for provided **'sObjectName'** will be created automatically.
 - `outputTableSpec` - Big Query table spec to write the output to. The table scheme you can find in [salesforce_opportunity_anomaly_detection_scheme.json](/src/main/resources/bigquery-tables/salesforce_opportunity_anomaly_detecton_scheme.json)
 - `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in \<project-id\>:\<dataset\>.\<table\> format. The table scheme you can find in [deadletter_table_scheme.json](/src/main/resources/bigquery-tables/deadletter_table_scheme.json)
-- `expansionService` - Python expansion service in format host:port, needed for RunInference transforms. 
-You can create a Compute Engine VM using the pre-build [expansion service image](https://hub.docker.com/layers/akvelon/dna-accelerator/expansion-service/images/sha256-045986791106f035993819d3ff3b66ac182489a45c14eba78c6f5077ff11910f?context=explore), 
-and configure port 8088 open for incoming connections in GCP Firewall. Please see [Expansion Service setup](https://github.com/akvelon/DnA_accelerators/blob/main/dataflow/ml/salesforce/pytorch/anomaly_detection/README.md#expansion-service) documentation for more details on how to build your expansion service.
 - `modelUri` - Model URI for Python ML RunInference.
 - `paramsUri` - Params URI for Python ML RunInference.
 - `encoderUri` - Encoder URI for Python ML RunInference.
@@ -363,6 +366,9 @@ The template allows for the user to supply the following optional parameters:
 - `secretStoreUrl` - URL to Salesforce credentials in HashiCorp Vault secret storage in the format
   'http(s)://vaultip:vaultport/path/to/credentials'.
 - `vaultToken` - Token to access HashiCorp Vault secret storage.
+- `expansionService` - Python expansion service in format host:port, needed for RunInference transforms. You can leave it empty if all of your extra packages are available in pip.
+  You can create Compute Engine VM using pre-build [expansion service image](https://hub.docker.com/layers/akvelon/dna-accelerator/expansion-service/images/sha256-045986791106f035993819d3ff3b66ac182489a45c14eba78c6f5077ff11910f?context=explore),
+  and configure port 8088 open for incoming connections in GCP Firewall. Please see [Expansion Service setup](https://github.com/akvelon/DnA_accelerators/blob/main/dataflow/ml/salesforce/pytorch/anomaly_detection/README.md#expansion-service) documentation for more details on how to build your expansion service.
 
 You can provide the next secured parameters directly instead of providing HashiCorp Vault parameters:
 - `username` - Salesforce username.

@@ -1,6 +1,6 @@
 #### Salesforce ML overview
 
-This approach uses python to run inference and data processing part of pipeline.
+This approach uses Python to run inference and data processing part of pipeline.
 We make use of custom Apache Beam PTransform packed with processing and ML steps. Each pipeline
 consists of expansion service that is responsible for supplying custom libraries and building python
 package with the target PTransform.

@@ -20,12 +20,11 @@ This section describes what is needed to run precompiled Salesforce to BigQuery 
 
 #### Artifacts
 
-In order to run precompiled template you need 3 artifacts:
+In order to run precompiled template you need 2 artifacts:
 1. Dataflow template json
 2. Template launcher image
-3. Expansion service image
 
-You can find Dataflow template [json file](src/main/resources/salesforce_to_bigquery_runinference_flex_template.json) in resources folder.
+3. You can find Dataflow template [json file](src/main/resources/salesforce_to_bigquery_runinference_flex_template.json) in resources folder.
 Upload it to your GCP bucket.
 By default, it will use the next template launcher image on Docker hub:
 
@@ -34,9 +33,12 @@ By default, it will use the next template launcher image on Docker hub:
 docker pull akvelon/dna-accelerator:template-launcher
 ```
 
-Then, you can download the next image for expansion service from Docker hub:
+We recommend usingthe `withExtraPackages` method of the `RunInference` class to pass pip dependencies for you ML models. Though if your use cases requires customization of the environment or use of transforms not available in the default Beam SDK, you might need to run your own expansion service before running your pipeline. We provide an example to create your custom expansion service for such cases.
 
-[Expansion service](https://hub.docker.com/layers/akvelon/dna-accelerator/expansion-service/images/sha256-045986791106f035993819d3ff3b66ac182489a45c14eba78c6f5077ff11910f?context=explore) image
+
+You can download the next image for expansion service from Docker hub:
+
+[Custom Expansion service](https://hub.docker.com/layers/akvelon/dna-accelerator/expansion-service/images/sha256-045986791106f035993819d3ff3b66ac182489a45c14eba78c6f5077ff11910f?context=explore) image
 ```
 docker pull akvelon/dna-accelerator:expansion-service
 ```
@@ -251,10 +253,8 @@ on your project's [Container Registry](https://cloud.google.com/container-regist
 
 #### Prerequisites
 
-Multi-language Dataflow templates imply possible use of Python Expansion service.
-Expansion service must be used when additional customization is required for your use case.
-If all of your extra packages are available in pip, then you may not use the expansion service.
-Additional information you can find [here](../../ml/salesforce/pytorch/anomaly_detection/README.md).
+[Dataflow Runner v2](https://cloud.google.com/dataflow/docs/runner-v2) supports multi-language pipelines out of the box by using a default expansion service with transforms from Beam SDKs. If your use case requires environment customizations or transforms not available in the default Beam SDKs you can create custom expansion service. 
+You can find additional information on creating a custom expansion service [here](../../ml/salesforce/pytorch/anomaly_detection/README.md).
 
 #### Creating the Dataflow Flex Template
 
@@ -318,10 +318,6 @@ gcloud builds submit . --tag ${TARGET_GCR_IMAGE}:latest
 To deploy the pipeline, you should refer to the template file and pass the
 [parameters](https://cloud.google.com/dataflow/docs/guides/specifying-exec-params#setting-other-cloud-dataflow-pipeline-options)
 required by the pipeline.
-
-Starting from Beam 2.42, `RunInference` class supports `withExtraPackages` method to install your packages in both the construction-time and execution-time environment. 
-This approach could be used instead of providing expansion service. This is a recommended option if you don't need additional customization and all of your packages are available in pip.
-However, for use cases that require more significant customization, a custom expansion service must be used.
 
 The template requires the following parameters:
 - `referenceName` - This will be used to uniquely identify this source.

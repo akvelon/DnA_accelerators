@@ -13,37 +13,48 @@ to read data from a [Cdap Salesforce Streaming plugin](https://github.com/data-i
 
 ## Getting Started
 
-This section describes what is needed to run precompiled Salesforce to BigQuery Streaming multi-language (Java + Python ML) template that already built.
+This section describes what is needed to run precompiled Salesforce to BigQuery Streaming multi-language (Java + Python ML) template.
 - Prepare Flex Template artifacts
 - Template parameters to set
-- How to create and run Dataflow job from Flex Template
+- How to create and run a Dataflow job from Flex Template
 
 #### Artifacts
 
-In order to run precompiled template you need 3 artifacts:
-1. Dataflow template json
+In order to run precompiled template you need 2 artifacts:
+1. Dataflow template JSON
 2. Template launcher image
-3. Expansion service image
 
-You can find Dataflow template [json file](src/main/resources/salesforce_to_bigquery_runinference_flex_template.json) in resources folder.
+You can find the Dataflow template [JSON file](src/main/resources/salesforce_to_bigquery_runinference_flex_template.json) in the resources folder.
 Upload it to your GCP bucket.
-By default, it will use the next template launcher image on Docker hub:
+By default, it will use the next template launcher image on the Docker hub:
 
 [Template launcher](https://hub.docker.com/layers/akvelon/dna-accelerator/template-launcher/images/sha256-ec1ba066d40a9b2dc6b7fe82dccbbfdc2d8cfed4664a501332bc35e48a5045f2?context=explore) image
 ```
 docker pull akvelon/dna-accelerator:template-launcher
 ```
 
-Then, you can download the next image for expansion service from Docker hub:
+> **_NOTE:_** We recommend using the `withExtraPackages` method of the `RunInference` class to pass pip dependencies for your ML models.
 
-[Expansion service](https://hub.docker.com/layers/akvelon/dna-accelerator/expansion-service/images/sha256-045986791106f035993819d3ff3b66ac182489a45c14eba78c6f5077ff11910f?context=explore) image
+Though if your use cases require customization of the environment or using transforms not available in the default Beam SDK, you might need to run your own expansion service before running your pipeline. We provide an example of creating your custom expansion service for such cases.
+
+<details>
+  <summary>Click here to see the details</summary>
+       
+---
+
+You can download the [Custom Expansion service image](https://hub.docker.com/layers/akvelon/dna-accelerator/expansion-service-2.47/images/sha256-a7a0869a6a9ee9ef7036a37c408234aa923fb14acd07f95ed180bbe757141138?context=explore) from the Docker hub:
+
 ```
 docker pull akvelon/dna-accelerator:expansion-service
 ```
 
 Start an instance on Google Compute Engine using this expansion service image.
-Store the host and port of expansion service instance, you will be able to provide it as the template parameter later.
+Store the host and port of the expansion service instance, you will be able to provide it as the template parameter later.
 Please see [Expansion Service setup](https://github.com/akvelon/DnA_accelerators/blob/main/dataflow/ml/salesforce/pytorch/anomaly_detection/README.md#expansion-service) section for more details.
+
+---
+
+</details>
 
 #### Template parameters
 
@@ -51,42 +62,17 @@ To deploy the pipeline, you should refer to the template file and pass the
 [parameters](https://cloud.google.com/dataflow/docs/guides/specifying-exec-params#setting-other-cloud-dataflow-pipeline-options)
 required by the pipeline.
 
-The template requires the following parameters:
-- `referenceName` - This will be used to uniquely identify this source.
-- `loginUrl` - Salesforce endpoint to authenticate to. Example: *'https://MyDomainName.my.salesforce.com/services/oauth2/token'*.
-- `SObjectName` - Salesforce object to pull supported by CDAP Salesforce Streaming Source.
-- `pushTopicName` - name of the push topic that was created from query for some sObject. This push topic should have enabled *pushTopicNotifyCreate* property.
-  If push topic with such name doesn't exist, then new push topic for provided **'sObjectName'** will be created automatically.
-- `outputTableSpec` - Big Query table spec to write the output to. The table scheme you can find in [salesforce_opportunity_anomaly_detection_scheme.json](/src/main/resources/bigquery-tables/salesforce_opportunity_anomaly_detecton_scheme.json)
-- `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in \<project-id\>:\<dataset\>.\<table\> format. The table scheme you can find in [deadletter_table_scheme.json](/src/main/resources/bigquery-tables/deadletter_table_scheme.json)
-- `expansionService` - Python expansion service in format host:port, needed for RunInference transforms.
-- `modelUri` - Model URI for Python ML RunInference.
-- `paramsUri` - Params URI for Python ML RunInference.
-- `encoderUri` - Encoder URI for Python ML RunInference.
-
-The template allows for the user to supply the following optional parameters:
-- `pullFrequencySec` - delay in seconds between polling for new records updates.
-- `startOffset` - inclusive start offset from which the reading should be started.
-- `secretStoreUrl` - URL to Salesforce credentials in HashiCorp Vault secret storage in the format
-  'http(s)://vaultip:vaultport/path/to/credentials'.
-- `vaultToken` - Token to access HashiCorp Vault secret storage.
-
-You can provide the next secured parameters directly instead of providing HashiCorp Vault parameters:
-- `username` - Salesforce username.
-- `password` - Salesforce user password.
-- `securityToken` - Salesforce security token.
-- `consumerKey` - Salesforce connected app's consumer key.
-- `consumerSecret` - Salesforce connected app's consumer secret.
+The template parameters you can find in [Build Salesforce to BigQuery Streaming multi-language (Java + Python ML) template parameters section](#multi-language-template-params).
 
 #### Run Dataflow job
-Upload Dataflow template json to GCP storage and follow [Running templates documentation](https://cloud.google.com/dataflow/docs/guides/templates/running-templates) setting all [template parameters](#template-parameters)
+Upload Dataflow template JSON to GCP storage and follow [Running templates documentation](https://cloud.google.com/dataflow/docs/guides/templates/running-templates) setting all [template parameters](#multi-language-template-params)
 
 ## How to build templates
 
 This section describes how to build and run one of the available templates in this repository.
 You should follow:
 1. First steps paragraph.
-2. Building particular template paragraph.
+2. Building a particular template paragraph.
 
 ### First steps
 #### GCP active project set up
@@ -106,7 +92,7 @@ REGION=<my-region>
 
 #### Template Metadata Storage Bucket Creation
 
-The Dataflow Flex template has to store its metadata in a bucket in
+The Dataflow Flex Template has to store its metadata in a bucket in
 [Google Cloud Storage](https://cloud.google.com/storage), so it can be executed from the Google Cloud Platform.
 Create the bucket in Google Cloud Storage if it doesn't exist yet:
 
@@ -141,7 +127,7 @@ both target package *and* all its dependencies.
 The result of the `package` task execution is a `salesforce-to-bigquery-1.0-SNAPSHOT.jar`
 file that is generated under the `target` folder in salesforce-to-bigquery directory.
 
-Then follow one of instructions for building particular template:
+Then follow one of the instructions for building a particular template:
 #### Available template pipelines
 
 - [Salesforce to BigQuery Batch template](src/main/java/com/akvelon/salesforce/templates/CdapSalesforceBatchToBigQuery.java)
@@ -192,19 +178,33 @@ The template requires the following parameters:
   If push topic with such name doesn't exist, then new push topic for provided **'SObjectName'** will be created automatically.
 - `outputTableSpec` - Big Query table spec to write the output to. The table scheme you can find in [salesforce_opportunity_batch_scheme.json](/src/main/resources/bigquery-tables/salesforce_opportunity_batch_scheme.json)
 
+It is also necessary to provide Salesforce security parameters
+<details>
+  <summary>directly:</summary>
+  
+- `username` - Salesforce username.
+- `password` - Salesforce user password.
+- `securityToken` - Salesforce security token.
+- `consumerKey` - Salesforce connected app's consumer key.
+- `consumerSecret` - Salesforce connected app's consumer secret.
+
+</details>
+
+<details>
+  <summary>or as HashiCorp Vault parameters:</summary>
+  
+- `secretStoreUrl` - URL to Salesforce credentials in HashiCorp Vault secret storage in the format
+  'http(s)://vaultip:vaultport/path/to/credentials'.
+- `vaultToken` - Token to access HashiCorp Vault secret storage.
+
+</details>
+
 The template allows for the user to supply the following optional parameters:
 - `offset` - Salesforce SObject query offset. Example: *1 days, 2 hours, 30 minutes*.
 - `duration` - Salesforce SObject query duration. Example: *1 days, 2 hours, 30 minutes*.
 - `query` - The SOQL query to retrieve results from. Example: *select Id, Name from Opportunity*.
 - `datetimeBefore` - Salesforce SObject query datetime filter. Example: *2019-03-12T11:29:52Z*.
 - `datetimeAfter` - Salesforce SObject query datetime filter. Example: *2019-03-12T11:29:52Z*.
-
-You can provide the next secured parameters directly instead of providing HashiCorp Vault parameters:
-- `username` - Salesforce username.
-- `password` - Salesforce user password.
-- `securityToken` - Salesforce security token.
-- `consumerKey` - Salesforce connected app's consumer key.
-- `consumerSecret` - Salesforce connected app's consumer secret.
 
 To run the template follow [How to run template instruction](#how-to-run-template)
 
@@ -252,19 +252,30 @@ The template requires the following parameters:
 - `outputTableSpec` - Big Query table spec to write the output to. The table scheme you can find in [salesforce_opportunity_streaming_scheme.json](/src/main/resources/bigquery-tables/salesforce_opportunity_streaming_scheme.json)
 - `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in \<project-id\>:\<dataset\>.\<table\> format. The table scheme you can find in [deadletter_table_scheme.json](/src/main/resources/bigquery-tables/deadletter_table_scheme.json)
 
-The template allows for the user to supply the following optional parameters:
-- `pullFrequencySec` - delay in seconds between polling for new records updates.
-- `startOffset` - inclusive start offset from which the reading should be started.
-- `secretStoreUrl` - URL to Salesforce credentials in HashiCorp Vault secret storage in the format
-  'http(s)://vaultip:vaultport/path/to/credentials'.
-- `vaultToken` - Token to access HashiCorp Vault secret storage.
-
-You can provide the next secured parameters directly instead of providing HashiCorp Vault parameters:
+It is also necessary to provide Salesforce security parameters
+<details>
+  <summary>directly:</summary>
+  
 - `username` - Salesforce username.
 - `password` - Salesforce user password.
 - `securityToken` - Salesforce security token.
 - `consumerKey` - Salesforce connected app's consumer key.
-- `consumerSecret` - Salesforce connected app's consumer secret. 
+- `consumerSecret` - Salesforce connected app's consumer secret.
+
+</details>
+
+<details>
+  <summary>or as HashiCorp Vault parameters:</summary>
+  
+- `secretStoreUrl` - URL to Salesforce credentials in HashiCorp Vault secret storage in the format
+  'http(s)://vaultip:vaultport/path/to/credentials'.
+- `vaultToken` - Token to access HashiCorp Vault secret storage.
+
+</details>
+
+The template allows for the user to supply the following optional parameters:
+- `pullFrequencySec` - delay in seconds between polling for new records updates.
+- `startOffset` - inclusive start offset from which the reading should be started.
 
 To run the template follow [How to run template instruction](#how-to-run-template)
 
@@ -275,8 +286,8 @@ on your project's [Container Registry](https://cloud.google.com/container-regist
 
 #### Prerequisites
 
-Multi-language Dataflow templates requires Python Expansion service.
-Additional information you can find [here](../../ml/salesforce/pytorch/anomaly_detection/README.md).
+[Dataflow Runner v2](https://cloud.google.com/dataflow/docs/runner-v2) supports multi-language pipelines out of the box by using a default expansion service with transforms from Beam SDKs. If your use case requires environment customizations or transforms not available in the default Beam SDKs you can create custom expansion service. 
+You can find additional information on creating a custom expansion service [here](../../ml/salesforce/pytorch/anomaly_detection/README.md).
 
 #### Creating the Dataflow Flex Template
 
@@ -304,9 +315,8 @@ gcloud dataflow flex-template build ${TEMPLATE_PATH} \
 
 #### Additional steps for multi-language templates
 
-*Note: Following commands will replace the default launcher image to the image with Java and Python.
-It is needed to run multi-language templates.*
-<br />
+> **_NOTE:_** *Following commands will replace the default launcher image to the image with Java and Python. It is needed to run multi-language templates.*
+
 <br />
 
 1. Navigate to the `flex-templates` folder:
@@ -336,8 +346,7 @@ cp ../../../target/salesforce-to-bigquery-1.0-SNAPSHOT.jar .
 gcloud builds submit . --tag ${TARGET_GCR_IMAGE}:latest
 ```
 
-#### Template Parameters
-
+#### <a id="multi-language-template-params"></a>Template Parameters
 To deploy the pipeline, you should refer to the template file and pass the
 [parameters](https://cloud.google.com/dataflow/docs/guides/specifying-exec-params#setting-other-cloud-dataflow-pipeline-options)
 required by the pipeline.
@@ -347,33 +356,46 @@ The template requires the following parameters:
 - `loginUrl` - Salesforce endpoint to authenticate to. Example: *'https://MyDomainName.my.salesforce.com/services/oauth2/token'*.
 - `SObjectName` - Salesforce object to pull supported by CDAP Salesforce Streaming Source.
 - `pushTopicName` - name of the push topic that was created from query for some sObject. This push topic should have enabled *pushTopicNotifyCreate* property.
-  If push topic with such name doesn't exist, then new push topic for provided **'sObjectName'** will be created automatically.
+  If push topic with such name doesn't exist, then a new push topic for provided **'sObjectName'** will be created automatically.
 - `outputTableSpec` - Big Query table spec to write the output to. The table scheme you can find in [salesforce_opportunity_anomaly_detection_scheme.json](/src/main/resources/bigquery-tables/salesforce_opportunity_anomaly_detecton_scheme.json)
 - `outputDeadLetterTable` - The dead-letter table to output to within BigQuery in \<project-id\>:\<dataset\>.\<table\> format. The table scheme you can find in [deadletter_table_scheme.json](/src/main/resources/bigquery-tables/deadletter_table_scheme.json)
-- `expansionService` - Python expansion service in format host:port, needed for RunInference transforms. 
-You can create a Compute Engine VM using the pre-build [expansion service image](https://hub.docker.com/layers/akvelon/dna-accelerator/expansion-service/images/sha256-045986791106f035993819d3ff3b66ac182489a45c14eba78c6f5077ff11910f?context=explore), 
-and configure port 8088 open for incoming connections in GCP Firewall. Please see [Expansion Service setup](https://github.com/akvelon/DnA_accelerators/blob/main/dataflow/ml/salesforce/pytorch/anomaly_detection/README.md#expansion-service) documentation for more details on how to build your expansion service.
 - `modelUri` - Model URI for Python ML RunInference.
 - `paramsUri` - Params URI for Python ML RunInference.
 - `encoderUri` - Encoder URI for Python ML RunInference.
 
-The template allows for the user to supply the following optional parameters:
-- `pullFrequencySec` - delay in seconds between polling for new records updates.
-- `startOffset` - inclusive start offset from which the reading should be started.
-- `secretStoreUrl` - URL to Salesforce credentials in HashiCorp Vault secret storage in the format
-  'http(s)://vaultip:vaultport/path/to/credentials'.
-- `vaultToken` - Token to access HashiCorp Vault secret storage.
-
-You can provide the next secured parameters directly instead of providing HashiCorp Vault parameters:
+It is also necessary to provide Salesforce security parameters
+<details>
+  <summary>directly:</summary>
+  
 - `username` - Salesforce username.
 - `password` - Salesforce user password.
 - `securityToken` - Salesforce security token.
 - `consumerKey` - Salesforce connected app's consumer key.
 - `consumerSecret` - Salesforce connected app's consumer secret.
 
-## How to run template
+</details>
 
-You can execute template in 3 different ways:
+<details>
+  <summary>or as HashiCorp Vault parameters:</summary>
+  
+- `secretStoreUrl` - URL to Salesforce credentials in HashiCorp Vault secret storage in the format
+  'http(s)://vaultip:vaultport/path/to/credentials'.
+- `vaultToken` - Token to access HashiCorp Vault secret storage.
+
+</details>
+
+The template allows the user to supply the following optional parameters:
+- `pullFrequencySec` - delay in seconds between polling for new records updates.
+- `startOffset` - inclusive start offset from which the reading should be started.
+- `expansionService` - Python expansion service in format host:port.
+  > **_NOTE:_** You can leave it empty if all of your extra packages are available in pip and you're passing them in `withExtraPackages` method.
+  
+  You can create Compute Engine VM using pre-build [Expansion Service image](https://hub.docker.com/layers/akvelon/dna-accelerator/expansion-service-2.47/images/sha256-a7a0869a6a9ee9ef7036a37c408234aa923fb14acd07f95ed180bbe757141138?context=explore),
+  and configure port 8088 open for incoming connections in GCP Firewall. Please see [Expansion Service setup documentation](https://github.com/akvelon/DnA_accelerators/blob/main/dataflow/ml/salesforce/pytorch/anomaly_detection/README.md#expansion-service) for more details on how to build your expansion service.
+
+## <a id="how-to-run-template"></a>How to run Dataflow Flex Template
+
+You can execute Dataflow Flex Template in 3 different ways:
 1. Using [Dataflow Google Cloud Console](https://console.cloud.google.com/dataflow/jobs)
 
 2. Using `gcloud` CLI tool
